@@ -1,4 +1,4 @@
-#GEREKSİNİMLER
+# Gereksinimler
 
 1.Kullanıcı girişi (Bireysel veya Kurumsal)
 

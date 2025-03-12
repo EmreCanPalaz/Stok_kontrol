@@ -53,4 +53,4 @@
 # Gereksinim Dağılımları
 
 1. [Emre Can Palaz'ın Gereksinimleri](Emre_Can_Palaz_gereksinimler.md)
-2. [Kaan Ceylan'ın Gereksinimleri](Kaan_Ceylan_gereksimler.md)
+2. [Kaan Ceylan'ın Gereksinimleri](Kaan_Ceylan_gereksinimler.md)

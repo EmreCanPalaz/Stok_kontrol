@@ -1,14 +1,14 @@
 # Gereksinimler
 
-1.Kullanıcı girişi (Bireysel veya Kurumsal)
+1.Kullanıcı girişi (Emre Can Palaz)
 
-2.Kullanıcı güncelleme
+2.Kullanıcı güncelleme (Emre Can Palaz)
 
-3.Kullanıcı ekleme
+3.Kullanıcı ekleme (Emre Can Palaz)
 
-4.Kullanıcı silme
+4.Kullanıcı silme (Emre Can Palaz)
 
-5.Şifremi unuttum
+5.Şifremi unuttum (Emre Can Palaz)
 
 6.Stok takibi
 
@@ -28,7 +28,7 @@
 
 14.Ürün linki
 
-15.Kimlik doğrulama
+15.Kimlik doğrulama (Emre Can Palaz)
 
 16.Yapay zeka asistan desteği
 
@@ -48,7 +48,7 @@
 
 24.Ürün Karşılaştırma – Aynı kategorideki ürünleri fiyat, stok gibi kriterlere göre karşılaştırma.
 
-25.Müşteri Geri Bildirim Anketleri – Kullanıcı deneyimini geliştirmek için geri bildirim toplama.
+25.Müşteri Geri Bildirim Anketleri – Kullanıcı deneyimini geliştirmek için geri bildirim toplama. (Emre Can Palaz)
 
 # Gereksinim Dağılımları
 

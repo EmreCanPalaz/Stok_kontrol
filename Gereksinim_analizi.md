@@ -48,7 +48,7 @@
 
 24.Ürün Karşılaştırma – Aynı kategorideki ürünleri fiyat, stok gibi kriterlere göre karşılaştırma.
 
-25.Müşteri Geri Bildirim Anketleri – Kullanıcı deneyimini geliştirmek için geri bildirim toplama. (Emre Can Palaz)
+25.Müşteri Geri Bildirim Anketleri (Emre Can Palaz)
 
 # Gereksinim Dağılımları
 

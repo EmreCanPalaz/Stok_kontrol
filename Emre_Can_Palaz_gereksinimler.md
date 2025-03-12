@@ -1,1 +1,7 @@
-
+1.  Kullanıcı Girişi: Kullanıcıların hizmetlere erişmek için onlardan istenen kimlik doğrulama sürecidir.
+2.  Kullanıcı Güncelleme: Kayıtlı kullanıcıların giriş yapmak için gerekli olan kullanıcı adı veya şifresinin ya da yetkisinin güncellenmesi durumu.
+3.  Kullanıcı Ekleme: Kullanıcıların yeni hesaplar oluşturarak hizmetin tüm özelliklerine erişmelerini ve etkileşimde bulunmalarını sağlar.
+4.  Kullanıcı Silme: Kullanıcıların oluşturmuş olduğu hesapların kullanım süresinin dolması veya usulsüz herhangi bir işlem sonucunda silinmesi durumudur.
+5.  Şifremi Unuttum: Sistemde kayıtlı olan kullanıcıların hesap oluştururken girmiş oldukları şifreyi unutması ve bunun sonucunda gerekli doğrulamalarla yeniden şifre oluşturmasına imkan sağlanması.
+15. Kimlik Doğrulama: Bir kullanıcının, sistemin veya cihazın iddia ettiği kimlikte olup olmadığını doğrulama sürecidir. Bu süreç, bir kullanıcının sisteme erişebilmesi için şifre, biyometrik veri, güvenlik anahtarı veya çok faktörlü doğrulama gibi yöntemlerle kimliğini kanıtlamasını gerektirir.
+25. Müşteri Geri Bildirim Anketleri: Bir işletmenin müşterilerinden ürün, hizmet veya genel deneyimleri hakkında geri bildirim toplamak için kullandığı yapılandırılmış soru setleridir. Bu anketler, müşteri memnuniyetini ölçmek, hizmet kalitesini değerlendirmek, iyileştirme alanlarını belirlemek ve müşteri beklentilerini daha iyi anlamak için tasarlanır.

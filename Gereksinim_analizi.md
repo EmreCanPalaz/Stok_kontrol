@@ -10,19 +10,19 @@
 
 5.Şifremi unuttum (Emre Can Palaz)
 
-6.Stok takibi
+6.Stok takibi(Emirhan Fidan)
 
-7.Depo giriş-çıkış takibi
+7.Depo giriş-çıkış takibi(Emirhan Fidan)
 
-8.Gelir gider takibi
+8.Gelir gider takibi(Emirhan Fidan)
 
-9.İşlem geçmişi
+9.İşlem geçmişi(Emirhan Fidan)
 
-10.Yorum ekleme
+10.Yorum ekleme(Emirhan Fidan)
 
-11.Yorum silme
+11.Yorum silme(Emirhan Fidan)
 
-12.Ürün puanlama
+12.Ürün puanlama(Emirhan Fidan)
 
 13.Favori ekle(Kaan Ceylan)
 

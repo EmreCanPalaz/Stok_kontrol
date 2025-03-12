@@ -24,23 +24,23 @@
 
 12.Ürün puanlama
 
-13.Favori ekle
+13.Favori ekle(Kaan Ceylan)
 
-14.Ürün linki
+14.Ürün linki (Kaan Ceylan)
 
 15.Kimlik doğrulama (Emre Can Palaz)
 
 16.Yapay zeka asistan desteği
 
-17.Ürün filtreleme
+17.Ürün filtreleme (Kaan Ceylan)
 
-18.Ürün arama
+18.Ürün arama (Kaan Ceylan)
 
-19.Ürün sıralama
+19.Ürün sıralama (Kaan Ceylan)
 
-20.Çoklu Dil Desteği – Kullanıcıların farklı dillerde siteyi kullanabilmesi.
+20.Çoklu Dil Desteği – Kullanıcıların farklı dillerde siteyi kullanabilmesi. (Kaan Ceylan)
 
-21.Barkod/QR Kod Entegrasyonu – Stok takibi için barkod/QR kod desteği.
+21.Barkod/QR Kod Entegrasyonu – Stok takibi için barkod/QR kod desteği. (Kaan Ceylan)
 
 22.Gerçek Zamanlı Bildirimler – Stok azaldığında veya sipariş geldiğinde bildirim alma.
 

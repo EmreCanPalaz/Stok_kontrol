@@ -38,15 +38,15 @@
 
 19.Ürün sıralama (Kaan Ceylan)
 
-20.Çoklu Dil Desteği – Kullanıcıların farklı dillerde siteyi kullanabilmesi. (Kaan Ceylan)
+20.Kullanıcıların farklı dillerde siteyi kullanabilmesi. (Kaan Ceylan)
 
-21.Barkod/QR Kod Entegrasyonu – Stok takibi için barkod/QR kod desteği. (Kaan Ceylan)
+21.Stok takibi için barkod/QR kod desteği. (Kaan Ceylan)
 
-22.Gerçek Zamanlı Bildirimler – Stok azaldığında veya sipariş geldiğinde bildirim alma.
+22.Stok azaldığında veya sipariş geldiğinde bildirim alma.
 
 23.Kargo & Lojistik Takibi – Ürün teslimat sürecini takip edebilme.
 
-24.Ürün Karşılaştırma – Aynı kategorideki ürünleri fiyat, stok gibi kriterlere göre karşılaştırma.
+24.Aynı kategorideki ürünleri fiyat, stok gibi kriterlere göre karşılaştırma.
 
 25.Müşteri Geri Bildirim Anketleri (Emre Can Palaz)
 

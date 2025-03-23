@@ -4,7 +4,7 @@
 
 2.Kullanıcı güncelleme (Emre Can Palaz)
 
-3.Kullanıcı ekleme (Emre Can Palaz)
+3.Kayıt ol (Emre Can Palaz)
 
 4.Kullanıcı silme (Emre Can Palaz)
 

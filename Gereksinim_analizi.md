@@ -40,7 +40,7 @@
 
 20.Kullanıcıların farklı dillerde siteyi kullanabilmesi. (Kaan Ceylan)
 
-21.Stok takibi için barkod/QR kod desteği. (Kaan Ceylan)
+21.Barkod/QR kod desteği. (Kaan Ceylan)
 
 22.Stok azaldığında veya sipariş geldiğinde bildirim alma.
 

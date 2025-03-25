@@ -10,5 +10,5 @@
 
 6. Sayfa dilini değiştirme: Uygulama, birden fazla dil seçeneği sunarak farklı ülkelerden kullanıcıların rahatça kullanımını sağlar.
 
-7. Stok takibi için barkod/QR kod desteği: Kullanıcılar, barkod veya QR kod tarayarak ürünleri hızlı bir şekilde tanımlayabilir veya bilgilerine erişebilir.
+7. Barkod/QR kod desteği: Kullanıcılar, barkod veya QR kod tarayarak ürünleri hızlı bir şekilde tanımlayabilir veya bilgilerine erişebilir.
 

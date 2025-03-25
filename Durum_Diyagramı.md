@@ -1,1 +1,1 @@
-[Stok kontrol uygulaması durum diyagramı](https://github.com/user-attachments/assets/abf6aae6-3f1f-4b3e-811f-c3abc103e88b)
+[Stok kontrol uygulaması durum diyagramı](https://drive.google.com/file/d/10t2Wb8AE6e4Q-icj0uSCB4JxgIH33lgy/view?usp=sharing)

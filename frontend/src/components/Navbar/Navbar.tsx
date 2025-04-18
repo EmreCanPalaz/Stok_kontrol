@@ -16,7 +16,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount, onFavoritesClick, favoritesCount, onSearch }) => {
 
-  const { translate, user, logout, activeAdminPanel, setActiveAdminPanel } = useAppContext();
+  const { translate, translateCustom, user, logout, activeAdminPanel, setActiveAdminPanel, language, setLanguage } = useAppContext();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAdminDropdown, setShowAdminDropdown] = useState(false);
@@ -114,13 +114,36 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount, onFavorites
               {/* Temel Navigasyon Linkleri */}
               <li className="nav-item">
                 <a className="nav-link active" href="#hero-section" onClick={(e) => handleNavigation('hero-section', e)}>
-                  Anasayfa
+                  {translate('home')}
                 </a>
               </li>
               <li className="nav-item">
                 <a className="nav-link" href="#products-section" onClick={(e) => handleNavigation('products-section', e)}>
-                  Ürünler
+                  {translate('products')}
                 </a>
+              </li>
+
+              {/* Dil Seçeneği */}
+              <li className="nav-item dropdown">
+                <button
+                  className="nav-link"
+                  onClick={() => {
+                    console.log("Dil değiştirme butonu tıklandı");
+                    console.log("Mevcut dil:", language);
+                    try {
+                      setShowDropdown(false);
+                      setShowAdminDropdown(false);
+                      setLanguage(language === 'tr' ? 'en' : 'tr');
+                      console.log("Dil değiştirildi:", language === 'tr' ? 'en' : 'tr');
+                    } catch (error) {
+                      console.error("Dil değiştirme hatası:", error);
+                    }
+                  }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  <i className="bi bi-globe me-1"></i>
+                  {language === 'tr' ? 'EN' : 'TR'}
+                </button>
               </li>
 
               {/* Yönetim Paneli Dropdown - Yalnızca giriş yapmış kullanıcılar için */}
@@ -131,7 +154,7 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount, onFavorites
                     onClick={toggleAdminDropdown}
                     style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                   >
-                    Yönetim <i className={`bi bi-chevron-${showAdminDropdown ? 'up' : 'down'}`}></i>
+                    {translate('management')} <i className={`bi bi-chevron-${showAdminDropdown ? 'up' : 'down'}`}></i>
                   </button>
 
                   {showAdminDropdown && (
@@ -140,37 +163,37 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount, onFavorites
                         className={`dropdown-menu-item ${activeAdminPanel === 'stock' ? 'active' : ''}`}
                         onClick={() => handleAdminPanelSelect('stock')}
                       >
-                        <i className="bi bi-box"></i> Stok Takibi
+                        <i className="bi bi-box"></i> {translate('stock_tracking')}
                       </button>
                       <button
                         className={`dropdown-menu-item ${activeAdminPanel === 'inventory' ? 'active' : ''}`}
                         onClick={() => handleAdminPanelSelect('inventory')}
                       >
-                        <i className="bi bi-arrow-left-right"></i> Depo Giriş-Çıkış
+                        <i className="bi bi-arrow-left-right"></i> {translate('inventory_tracking')}
                       </button>
                       <button
                         className={`dropdown-menu-item ${activeAdminPanel === 'finance' ? 'active' : ''}`}
                         onClick={() => handleAdminPanelSelect('finance')}
                       >
-                        <i className="bi bi-cash-stack"></i> Gelir-Gider Takibi
+                        <i className="bi bi-cash-stack"></i> {translate('finance_tracking')}
                       </button>
                       <button
                         className={`dropdown-menu-item ${activeAdminPanel === 'activity' ? 'active' : ''}`}
                         onClick={() => handleAdminPanelSelect('activity')}
                       >
-                        <i className="bi bi-clock-history"></i> İşlem Geçmişi
+                        <i className="bi bi-clock-history"></i> {translate('activity_log')}
                       </button>
                       <button
                         className={`dropdown-menu-item ${activeAdminPanel === 'reviews' ? 'active' : ''}`}
                         onClick={() => handleAdminPanelSelect('reviews')}
                       >
-                        <i className="bi bi-star"></i> Yorum Yönetimi
+                        <i className="bi bi-star"></i> {translate('review_management')}
                       </button>
                       <button
                         className={`dropdown-menu-item ${activeAdminPanel === 'product' ? 'active' : ''}`}
                         onClick={() => handleAdminPanelSelect('product')}
                       >
-                        <i className="bi bi-plus-circle"></i> Ürün Ekle
+                        <i className="bi bi-plus-circle"></i> {translate('add_product')}
                       </button>
                       {activeAdminPanel && (
                         <>
@@ -179,7 +202,7 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount, onFavorites
                             className="dropdown-menu-item text-danger"
                             onClick={() => setActiveAdminPanel(null)}
                           >
-                            <i className="bi bi-x"></i> Paneli Kapat
+                            <i className="bi bi-x"></i> {translate('close_panel')}
                           </button>
                         </>
                       )}
@@ -195,8 +218,8 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount, onFavorites
                 <input
                   className="form-control"
                   type="search"
-                  placeholder="Ürün ara..."
-                  aria-label="Ürün ara"
+                  placeholder={translate('search_product')}
+                  aria-label={translate('search_product')}
                   value={searchTerm}
                   onChange={handleSearchChange}
                 />
@@ -211,7 +234,7 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount, onFavorites
               <button
                 className="btn btn-outline-danger me-2 position-relative"
                 onClick={onFavoritesClick}
-                title="Favorilerim"
+                title={translate('favorites')}
               >
                 <i className="bi bi-heart"></i>
                 {favoritesCount > 0 && (
@@ -225,7 +248,7 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount, onFavorites
               <button
                 className="btn btn-outline-primary me-2 position-relative"
                 onClick={onCartClick}
-                title="Alışveriş Sepeti"
+                title={translate('cart')}
               >
                 <i className="bi bi-cart"></i>
                 {cartItemCount > 0 && (
@@ -247,17 +270,17 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount, onFavorites
 
                   {showDropdown && (
                     <div className="user-dropdown-menu">
-                      <button className="dropdown-menu-item" onClick={() => openAuthModal('updateUser')}>Profil</button>
-                      <button className="dropdown-menu-item" onClick={() => openAuthModal('feedback')}>Geribildirim</button>
-                      <button className="dropdown-menu-item text-danger" onClick={() => openAuthModal('deleteAccount')}>Hesabı Sil</button>
+                      <button className="dropdown-menu-item" onClick={() => openAuthModal('updateUser')}>{translate('profile')}</button>
+                      <button className="dropdown-menu-item" onClick={() => openAuthModal('feedback')}>{translate('feedback')}</button>
+                      <button className="dropdown-menu-item text-danger" onClick={() => openAuthModal('deleteAccount')}>{translate('delete_account')}</button>
                       <div className="dropdown-divider"></div>
-                      <button className="dropdown-menu-item" onClick={handleLogout}>Çıkış Yap</button>
+                      <button className="dropdown-menu-item" onClick={handleLogout}>{translate('logout')}</button>
                     </div>
                   )}
                 </div>
               ) : (
                 <button className="btn btn-primary" onClick={() => openAuthModal('login')}>
-                  Giriş / Kayıt
+                  {translate('login_register')}
                 </button>
               )}
             </div>

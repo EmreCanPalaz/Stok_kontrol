@@ -9,7 +9,7 @@ import AddProduct from './AddProduct';
 import './AdminPanel.css';
 
 const AdminPanel: React.FC = () => {
-  const { activeAdminPanel } = useAppContext();
+  const { activeAdminPanel, translate } = useAppContext();
 
   console.log('Active Admin Panel:', activeAdminPanel);
 
@@ -18,12 +18,12 @@ const AdminPanel: React.FC = () => {
   return (
     <div className="admin-panel-container">
       <h3 className="admin-panel-title">
-        {activeAdminPanel === 'stock' ? 'Stok Takibi' :
-          activeAdminPanel === 'inventory' ? 'Depo Giriş-Çıkış Takibi' :
-            activeAdminPanel === 'finance' ? 'Gelir-Gider Takibi' :
-              activeAdminPanel === 'activity' ? 'İşlem Geçmişi' :
-                activeAdminPanel === 'reviews' ? 'Yorum Yönetimi' :
-                  activeAdminPanel === 'product' ? 'Ürün Ekle' : 'Bilinmeyen Panel'}
+        {activeAdminPanel === 'stock' ? translate('stock_tracking') :
+          activeAdminPanel === 'inventory' ? translate('inventory_tracking') :
+            activeAdminPanel === 'finance' ? translate('finance_tracking') :
+              activeAdminPanel === 'activity' ? translate('activity_log') :
+                activeAdminPanel === 'reviews' ? translate('review_management') :
+                  activeAdminPanel === 'product' ? translate('add_product') : 'Unknown Panel'}
       </h3>
 
       {activeAdminPanel === 'stock' && <StockControl />}

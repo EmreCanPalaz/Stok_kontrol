@@ -138,6 +138,10 @@ interface AppContextType {
   getReviewsByProduct: (productId: number) => Review[];
   getReviewsByUser: (userId: string) => Review[];
   getAverageRating: (productId: number) => number;
+
+  // Dil ayarları için
+  language: 'tr' | 'en';
+  setLanguage: (lang: 'tr' | 'en') => void;
 }
 
 // Context oluşturma 
@@ -161,6 +165,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [activeAdminPanel, setActiveAdminPanel] = useState<string | null>(null);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+
+  // Dil ayarı için state
+  const [language, setLanguage] = useState<'tr' | 'en'>('tr');
 
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -325,14 +332,308 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     localStorage.removeItem('cart');
   };
 
-  const translate = (key: string): string => {
+  // Dil değiştirme fonksiyonu
+  const handleSetLanguage = (lang: 'tr' | 'en') => {
+    setLanguage(lang);
+    localStorage.setItem('language', lang);
 
-    return key;
+    // Dil değişikliğini aktivite loguna ekle
+    addActivityLog({
+      action: 'language_change',
+      description: `Dil değiştirildi: ${lang === 'tr' ? 'Türkçe' : 'İngilizce'}`,
+      details: { previousLanguage: language, newLanguage: lang },
+      performedBy: user?.username || 'Misafir Kullanıcı'
+    });
+  };
+
+  // Dil ayarını localStorage'dan yükle
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage === 'tr' || savedLanguage === 'en') {
+      setLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çeviri fonksiyonu - string türünden çevirileri bulmak için
+  const translate = (key: string): string => {
+    const translations: Record<string, Record<string, string>> = {
+      'add_product': {
+        'tr': 'Ürün Ekle',
+        'en': 'Add Product'
+      },
+      'product_name': {
+        'tr': 'Ürün Adı',
+        'en': 'Product Name'
+      },
+      'price': {
+        'tr': 'Fiyat',
+        'en': 'Price'
+      },
+      'stock': {
+        'tr': 'Stok Miktarı',
+        'en': 'Stock Quantity'
+      },
+      'category': {
+        'tr': 'Kategori',
+        'en': 'Category'
+      },
+      'description': {
+        'tr': 'Ürün Açıklaması',
+        'en': 'Product Description'
+      },
+      'image_url': {
+        'tr': 'Ürün Görseli URL',
+        'en': 'Product Image URL'
+      },
+      'submit': {
+        'tr': 'Gönder',
+        'en': 'Submit'
+      },
+      'success': {
+        'tr': 'Başarılı',
+        'en': 'Success'
+      },
+      'error': {
+        'tr': 'Hata',
+        'en': 'Error'
+      },
+      'home': {
+        'tr': 'Anasayfa',
+        'en': 'Home'
+      },
+      'products': {
+        'tr': 'Ürünler',
+        'en': 'Products'
+      },
+      'management': {
+        'tr': 'Yönetim',
+        'en': 'Management'
+      },
+      'stock_tracking': {
+        'tr': 'Stok Takibi',
+        'en': 'Stock Tracking'
+      },
+      'inventory_tracking': {
+        'tr': 'Depo Giriş-Çıkış Takibi',
+        'en': 'Inventory Tracking'
+      },
+      'finance_tracking': {
+        'tr': 'Gelir-Gider Takibi',
+        'en': 'Finance Tracking'
+      },
+      'activity_log': {
+        'tr': 'İşlem Geçmişi',
+        'en': 'Activity Log'
+      },
+      'review_management': {
+        'tr': 'Yorum Yönetimi',
+        'en': 'Review Management'
+      },
+      'close_panel': {
+        'tr': 'Paneli Kapat',
+        'en': 'Close Panel'
+      },
+      'search_product': {
+        'tr': 'Ürün ara...',
+        'en': 'Search products...'
+      },
+      'favorites': {
+        'tr': 'Favorilerim',
+        'en': 'My Favorites'
+      },
+      'cart': {
+        'tr': 'Alışveriş Sepeti',
+        'en': 'Shopping Cart'
+      },
+      'login_register': {
+        'tr': 'Giriş / Kayıt',
+        'en': 'Login / Register'
+      },
+      'profile': {
+        'tr': 'Profil',
+        'en': 'Profile'
+      },
+      'feedback': {
+        'tr': 'Geribildirim',
+        'en': 'Feedback'
+      },
+      'delete_account': {
+        'tr': 'Hesabı Sil',
+        'en': 'Delete Account'
+      },
+      'logout': {
+        'tr': 'Çıkış Yap',
+        'en': 'Logout'
+      },
+      'barcode_scanner': {
+        'tr': 'Barkod Tarayıcı ile Ürün Ara',
+        'en': 'Search Product with Barcode Scanner'
+      },
+      'product_added': {
+        'tr': 'Ürün başarıyla eklendi!',
+        'en': 'Product added successfully!'
+      },
+      'product_add_error': {
+        'tr': 'Ürün eklenirken bir hata oluştu. Lütfen tekrar deneyin.',
+        'en': 'An error occurred while adding the product. Please try again.'
+      },
+      'required_field': {
+        'tr': 'Bu alan gereklidir',
+        'en': 'This field is required'
+      },
+      'valid_price': {
+        'tr': 'Geçerli bir fiyat giriniz',
+        'en': 'Enter a valid price'
+      },
+      'select_category': {
+        'tr': 'Kategori seçiniz',
+        'en': 'Select a category'
+      },
+      'valid_stock': {
+        'tr': 'Stok miktarı 0 veya daha büyük olmalıdır',
+        'en': 'Stock quantity must be 0 or greater'
+      },
+      'clothing': {
+        'tr': 'Giyim',
+        'en': 'Clothing'
+      },
+      'electronics': {
+        'tr': 'Elektronik',
+        'en': 'Electronics'
+      },
+      'accessories': {
+        'tr': 'Aksesuar',
+        'en': 'Accessories'
+      },
+      'other': {
+        'tr': 'Diğer',
+        'en': 'Other'
+      },
+      'add': {
+        'tr': 'Ekle',
+        'en': 'Add'
+      },
+      'back_to_form': {
+        'tr': 'Forma Dön',
+        'en': 'Back to Form'
+      },
+      'select_language': {
+        'tr': 'Dil Seçin',
+        'en': 'Select Language'
+      },
+      'turkish': {
+        'tr': 'Türkçe',
+        'en': 'Turkish'
+      },
+      'english': {
+        'tr': 'İngilizce',
+        'en': 'English'
+      },
+      // Hero Section translations
+      'hero_title': {
+        'tr': 'Stok <span>Yönetim</span> Sistemi',
+        'en': 'Inventory <span>Management</span> System'
+      },
+      'hero_subtitle': {
+        'tr': 'Güçlü çözümümüzle stok takibi yapın, yönetin ve optimize edin.',
+        'en': 'Efficiently track, manage, and optimize your inventory with our powerful solution.'
+      },
+      'feature_stock_tracking': {
+        'tr': 'Gerçek zamanlı stok takibi',
+        'en': 'Real-time stock tracking'
+      },
+      'feature_analytics': {
+        'tr': 'Performans analizleri',
+        'en': 'Performance analytics'
+      },
+      'feature_alerts': {
+        'tr': 'Düşük stok uyarıları',
+        'en': 'Low stock alerts'
+      },
+      'explore_products': {
+        'tr': 'Ürünleri Keşfet',
+        'en': 'Explore Products'
+      },
+      // Products section translations
+      'product_section_title': {
+        'tr': 'Ürünlerimiz',
+        'en': 'Our Products'
+      },
+      'filters': {
+        'tr': 'Filtreler',
+        'en': 'Filters'
+      },
+      'filter_by_category': {
+        'tr': 'Kategoriye Göre Filtrele',
+        'en': 'Filter by Category'
+      },
+      'filter_by_price': {
+        'tr': 'Fiyata Göre Filtrele',
+        'en': 'Filter by Price'
+      },
+      'sort_by': {
+        'tr': 'Sırala',
+        'en': 'Sort By'
+      },
+      'featured': {
+        'tr': 'Öne Çıkanlar',
+        'en': 'Featured'
+      },
+      'price_low_to_high': {
+        'tr': 'Fiyat: Düşükten Yükseğe',
+        'en': 'Price: Low to High'
+      },
+      'price_high_to_low': {
+        'tr': 'Fiyat: Yüksekten Düşüğe',
+        'en': 'Price: High to Low'
+      },
+      'name_a_to_z': {
+        'tr': 'İsim: A-Z',
+        'en': 'Name: A-Z'
+      },
+      'name_z_to_a': {
+        'tr': 'İsim: Z-A',
+        'en': 'Name: Z-A'
+      },
+      'in_stock_only': {
+        'tr': 'Sadece Stokta Olanlar',
+        'en': 'In Stock Only'
+      },
+      'clear_filters': {
+        'tr': 'Filtreleri Temizle',
+        'en': 'Clear Filters'
+      },
+      'min_price': {
+        'tr': 'Min Fiyat',
+        'en': 'Min Price'
+      },
+      'max_price': {
+        'tr': 'Max Fiyat',
+        'en': 'Max Price'
+      },
+      'apply_filters': {
+        'tr': 'Filtreleri Uygula',
+        'en': 'Apply Filters'
+      },
+      'no_products_found': {
+        'tr': 'Eşleşen ürün bulunamadı, lütfen filtrelerinizi değiştirin.',
+        'en': 'No products found matching your criteria, please adjust your filters.'
+      },
+      'active_filters': {
+        'tr': 'Aktif Filtreler',
+        'en': 'Active Filters'
+      },
+      'all_categories': {
+        'tr': 'Tüm Kategoriler',
+        'en': 'All Categories'
+      },
+    };
+
+    return translations[key]?.[language] || key;
   };
 
   const translateCustom = (turkishText: string, englishText: string): string => {
-
-    return englishText;
+    return language === 'tr' ? turkishText : englishText;
   };
 
   // Authentication methods
@@ -891,7 +1192,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     approveReview,
     getReviewsByProduct,
     getReviewsByUser,
-    getAverageRating
+    getAverageRating,
+
+    // Dil ayarları için
+    language,
+    setLanguage: handleSetLanguage,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

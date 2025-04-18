@@ -16,9 +16,11 @@ const HomePage: React.FC = () => {
     cartItems,
     addToCart,
     translate,
+    translateCustom,
     activeAdminPanel,
     favoriteItems,
-    products
+    products,
+    language
   } = useAppContext();
 
   const [showCart, setShowCart] = useState(false);
@@ -208,21 +210,21 @@ const HomePage: React.FC = () => {
         <div className="hero-section" id="hero-section">
           <div className="row align-items-center">
             <div className="col-md-6">
-              <h1 className="hero-title">Inventory <span>Management</span> System</h1>
-              <p className="hero-subtitle">Efficiently track, manage, and optimize your inventory with our powerful solution.</p>
+              <h1 className="hero-title" dangerouslySetInnerHTML={{ __html: translate('hero_title') }} />
+              <p className="hero-subtitle">{translate('hero_subtitle')}</p>
 
               <div className="feature-list mt-4">
                 <div className="feature-item">
                   <i className="bi bi-check-circle text-success me-2"></i>
-                  <span>Real-time stock tracking</span>
+                  <span>{translate('feature_stock_tracking')}</span>
                 </div>
                 <div className="feature-item">
                   <i className="bi bi-graph-up text-success me-2"></i>
-                  <span>Performance analytics</span>
+                  <span>{translate('feature_analytics')}</span>
                 </div>
                 <div className="feature-item">
                   <i className="bi bi-bell text-success me-2"></i>
-                  <span>Low stock alerts</span>
+                  <span>{translate('feature_alerts')}</span>
                 </div>
               </div>
 
@@ -231,7 +233,7 @@ const HomePage: React.FC = () => {
                 onClick={handleShopNow}
               >
                 <i className="bi bi-box-arrow-right me-2"></i>
-                Explore Products
+                {translate('explore_products')}
               </button>
             </div>
 

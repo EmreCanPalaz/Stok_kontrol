@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './FilterSort.css';
+import { useAppContext } from '../../context/AppContext';
 
 interface FilterSortProps {
     onSort: (sortOption: string) => void;
@@ -20,6 +21,7 @@ const FilterSort: React.FC<FilterSortProps> = ({
     minPrice,
     maxPrice
 }) => {
+    const { translate } = useAppContext();
     const [localMinPrice, setLocalMinPrice] = useState<string>(minPrice?.toString() || '');
     const [localMaxPrice, setLocalMaxPrice] = useState<string>(maxPrice?.toString() || '');
     const [expanded, setExpanded] = useState(false);
@@ -51,12 +53,12 @@ const FilterSort: React.FC<FilterSortProps> = ({
     return (
         <div className="filter-sort-container">
             <div className="filter-sort-header">
-                <h5>Filtrele ve Sırala</h5>
+                <h5>{translate('filters')}</h5>
                 <button
                     className="btn btn-sm btn-outline-secondary"
                     onClick={toggleExpand}
                 >
-                    {expanded ? 'Daralt' : 'Genişlet'}
+                    {expanded ? translate('collapse') : translate('expand')}
                     <i className={`bi bi-chevron-${expanded ? 'up' : 'down'} ms-1`}></i>
                 </button>
             </div>
@@ -64,41 +66,41 @@ const FilterSort: React.FC<FilterSortProps> = ({
             <div className={`filter-sort-content ${expanded ? 'expanded' : ''}`}>
                 {/* Sorting options */}
                 <div className="filter-group">
-                    <label htmlFor="sortSelect" className="filter-label">Sıralama</label>
+                    <label htmlFor="sortSelect" className="filter-label">{translate('sort')}</label>
                     <select
                         id="sortSelect"
                         className="form-select"
                         value={selectedSortOption}
                         onChange={handleSortChange}
                     >
-                        <option value="featured">Öne Çıkanlar</option>
-                        <option value="price-asc">Fiyat: Düşükten Yükseğe</option>
-                        <option value="price-desc">Fiyat: Yüksekten Düşüğe</option>
-                        <option value="name-asc">İsim: A-Z</option>
-                        <option value="name-desc">İsim: Z-A</option>
+                        <option value="featured">{translate('featured')}</option>
+                        <option value="price-asc">{translate('price_low_to_high')}</option>
+                        <option value="price-desc">{translate('price_high_to_low')}</option>
+                        <option value="name-asc">{translate('name_a_to_z')}</option>
+                        <option value="name-desc">{translate('name_z_to_a')}</option>
                     </select>
                 </div>
 
                 {/* Price filter */}
                 <div className="filter-group">
-                    <label className="filter-label">Fiyat Aralığı</label>
+                    <label className="filter-label">{translate('price_range')}</label>
                     <div className="price-range-inputs">
                         <div className="input-group">
-                            <span className="input-group-text">$</span>
+                            <span className="input-group-text">₺</span>
                             <input
                                 type="number"
                                 className="form-control"
-                                placeholder="Min"
+                                placeholder={translate('min')}
                                 value={localMinPrice}
                                 onChange={(e) => setLocalMinPrice(e.target.value)}
                             />
                         </div>
                         <div className="input-group">
-                            <span className="input-group-text">$</span>
+                            <span className="input-group-text">₺</span>
                             <input
                                 type="number"
                                 className="form-control"
-                                placeholder="Max"
+                                placeholder={translate('max')}
                                 value={localMaxPrice}
                                 onChange={(e) => setLocalMaxPrice(e.target.value)}
                             />
@@ -109,13 +111,13 @@ const FilterSort: React.FC<FilterSortProps> = ({
                             className="btn btn-sm btn-primary"
                             onClick={handlePriceFilterApply}
                         >
-                            Uygula
+                            {translate('apply')}
                         </button>
                         <button
                             className="btn btn-sm btn-outline-secondary"
                             onClick={handlePriceFilterClear}
                         >
-                            Temizle
+                            {translate('clear')}
                         </button>
                     </div>
                 </div>
@@ -131,7 +133,7 @@ const FilterSort: React.FC<FilterSortProps> = ({
                             onChange={handleStockFilterChange}
                         />
                         <label className="form-check-label" htmlFor="inStockCheck">
-                            Sadece Stokta Olanlar
+                            {translate('in_stock_only')}
                         </label>
                     </div>
                 </div>

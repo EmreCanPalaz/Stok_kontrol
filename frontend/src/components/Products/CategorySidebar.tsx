@@ -1,5 +1,6 @@
 import React from 'react';
 import './CategorySidebar.css';
+import { useAppContext } from '../../context/AppContext';
 
 interface CategorySidebarProps {
     categories: string[];
@@ -12,6 +13,8 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
     selectedCategory,
     onSelectCategory
 }) => {
+    const { translate } = useAppContext();
+
     // Get category icon based on name
     const getCategoryIcon = (category: string): string => {
         switch (category.toLowerCase()) {
@@ -36,7 +39,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
 
     return (
         <div className="category-sidebar">
-            <h5 className="category-heading">Kategoriler</h5>
+            <h5 className="category-heading">{translate('filter_by_category')}</h5>
 
             <ul className="category-list">
                 <li
@@ -44,7 +47,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
                     onClick={() => onSelectCategory(null)}
                 >
                     <i className="bi bi-grid category-icon"></i>
-                    <span>Tüm Ürünler</span>
+                    <span>{translate('all_categories')}</span>
                     <span className="category-count">({categories.length})</span>
                 </li>
 

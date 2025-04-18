@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import './AddProduct.css';
 import BarcodeScanner from './BarcodeScanner';
 import { ProductProps } from '../../context/AppContext';
 
 const AddProduct: React.FC = () => {
-    const { products, addProduct } = useAppContext();
+    const { products, addProduct, translate, language } = useAppContext();
     const [showScanner, setShowScanner] = useState(false);
+
+    // Debug - dil değişikliğini izle
+    useEffect(() => {
+        console.log("AddProduct - Dil değişti:", language);
+    }, [language]);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -47,19 +52,19 @@ const AddProduct: React.FC = () => {
         const newErrors: Record<string, string> = {};
 
         if (!formData.title.trim()) {
-            newErrors.title = 'Ürün başlığı gereklidir';
+            newErrors.title = translate('required_field');
         }
 
         if (formData.price <= 0) {
-            newErrors.price = 'Geçerli bir fiyat giriniz';
+            newErrors.price = translate('valid_price');
         }
 
         if (!formData.category) {
-            newErrors.category = 'Kategori seçiniz';
+            newErrors.category = translate('select_category');
         }
 
         if (formData.stock < 0) {
-            newErrors.stock = 'Stok miktarı 0 veya daha büyük olmalıdır';
+            newErrors.stock = translate('valid_stock');
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -81,7 +86,7 @@ const AddProduct: React.FC = () => {
             console.log('Ürün başarıyla eklendi:', newProduct);
 
             // Show success message
-            setSuccessMessage('Ürün başarıyla eklendi!');
+            setSuccessMessage(translate('product_added'));
 
             // Clear form after successful submission
             setFormData({
@@ -100,7 +105,7 @@ const AddProduct: React.FC = () => {
         } catch (error) {
             console.error('Ürün eklenirken hata oluştu:', error);
             setErrors({
-                form: 'Ürün eklenirken bir hata oluştu. Lütfen tekrar deneyin.'
+                form: translate('product_add_error')
             });
         }
     };
@@ -121,7 +126,7 @@ const AddProduct: React.FC = () => {
 
     return (
         <div className="add-product-container">
-            <h2 className="mb-4">Yeni Ürün Ekle</h2>
+            <h2 className="mb-4">{translate('add_product')}</h2>
 
             {!showScanner ? (
                 <>
@@ -131,7 +136,7 @@ const AddProduct: React.FC = () => {
                             onClick={() => setShowScanner(true)}
                         >
                             <i className="bi bi-upc-scan me-2"></i>
-                            Barkod Tarayıcı ile Ürün Ara
+                            {translate('barcode_scanner')}
                         </button>
                     </div>
 
@@ -149,7 +154,7 @@ const AddProduct: React.FC = () => {
 
                     <form onSubmit={handleSubmit}>
                         <div className="mb-3">
-                            <label htmlFor="title" className="form-label">Ürün Adı</label>
+                            <label htmlFor="title" className="form-label">{translate('product_name')}</label>
                             <input
                                 type="text"
                                 className={`form-control ${errors.title ? 'is-invalid' : ''}`}
@@ -163,7 +168,7 @@ const AddProduct: React.FC = () => {
 
                         <div className="row">
                             <div className="col-md-6 mb-3">
-                                <label htmlFor="price" className="form-label">Fiyat</label>
+                                <label htmlFor="price" className="form-label">{translate('price')}</label>
                                 <div className="input-group">
                                     <span className="input-group-text">₺</span>
                                     <input
@@ -181,7 +186,7 @@ const AddProduct: React.FC = () => {
                             </div>
 
                             <div className="col-md-6 mb-3">
-                                <label htmlFor="stock" className="form-label">Stok Miktarı</label>
+                                <label htmlFor="stock" className="form-label">{translate('stock')}</label>
                                 <input
                                     type="number"
                                     className={`form-control ${errors.stock ? 'is-invalid' : ''}`}
@@ -196,7 +201,7 @@ const AddProduct: React.FC = () => {
                         </div>
 
                         <div className="mb-3">
-                            <label htmlFor="category" className="form-label">Kategori</label>
+                            <label htmlFor="category" className="form-label">{translate('category')}</label>
                             <select
                                 className={`form-select ${errors.category ? 'is-invalid' : ''}`}
                                 id="category"
@@ -204,17 +209,17 @@ const AddProduct: React.FC = () => {
                                 value={formData.category}
                                 onChange={handleInputChange}
                             >
-                                <option value="">Kategori Seçin</option>
-                                <option value="Giyim">Giyim</option>
-                                <option value="Elektronik">Elektronik</option>
-                                <option value="Aksesuar">Aksesuar</option>
-                                <option value="Diğer">Diğer</option>
+                                <option value="">{translate('select_category')}</option>
+                                <option value="Giyim">{translate('clothing')}</option>
+                                <option value="Elektronik">{translate('electronics')}</option>
+                                <option value="Aksesuar">{translate('accessories')}</option>
+                                <option value="Diğer">{translate('other')}</option>
                             </select>
                             {errors.category && <div className="invalid-feedback">{errors.category}</div>}
                         </div>
 
                         <div className="mb-3">
-                            <label htmlFor="description" className="form-label">Ürün Açıklaması</label>
+                            <label htmlFor="description" className="form-label">{translate('description')}</label>
                             <textarea
                                 className="form-control"
                                 id="description"
@@ -226,7 +231,7 @@ const AddProduct: React.FC = () => {
                         </div>
 
                         <div className="mb-3">
-                            <label htmlFor="image" className="form-label">Ürün Görseli URL</label>
+                            <label htmlFor="image" className="form-label">{translate('image_url')}</label>
                             <input
                                 type="text"
                                 className="form-control"
@@ -251,7 +256,7 @@ const AddProduct: React.FC = () => {
 
                         <button type="submit" className="btn btn-primary">
                             <i className="bi bi-plus-circle me-2"></i>
-                            Ürün Ekle
+                            {translate('add_product')}
                         </button>
                     </form>
                 </>
@@ -263,7 +268,7 @@ const AddProduct: React.FC = () => {
                         onClick={() => setShowScanner(false)}
                     >
                         <i className="bi bi-arrow-left me-2"></i>
-                        Forma Dön
+                        {translate('back_to_form')}
                     </button>
                 </div>
             )}

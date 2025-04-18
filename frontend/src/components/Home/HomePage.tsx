@@ -10,14 +10,10 @@ import AdminPanel from '../Admin/AdminPanel';
 // HomePage component'i
 const HomePage: React.FC = () => {
   const {
-    cartItems, 
-<<<<<<< HEAD
-    addToCart
-=======
+    cartItems,
     addToCart,
     translate,
     activeAdminPanel
->>>>>>> e6df8598725937c959add0e442b7a36f7ec411a9
   } = useAppContext();
 
   const [showCart, setShowCart] = useState(false);

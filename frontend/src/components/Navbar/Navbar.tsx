@@ -13,9 +13,10 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount }) => {
  
-  const { translate, user, logout } = useAppContext();
+  const { translate, user, logout, activeAdminPanel, setActiveAdminPanel } = useAppContext();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showAdminDropdown, setShowAdminDropdown] = useState(false);
   const [initialAuthForm, setInitialAuthForm] = useState<'login' | 'register' | 'deleteAccount' | 'updateUser' | 'feedback'>('login');
 
   
@@ -45,14 +46,27 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount }) => {
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
+    setShowAdminDropdown(false);
+  };
+  
+  const toggleAdminDropdown = () => {
+    setShowAdminDropdown(!showAdminDropdown);
+    setShowDropdown(false);
+  };
+  
+  const handleAdminPanelSelect = (panel: string) => {
+    console.log('Panel seçildi:', panel);
+    setActiveAdminPanel(panel);
+    setShowAdminDropdown(false);
   };
   
   React.useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
-      if (showDropdown) {
+      if (showDropdown || showAdminDropdown) {
         const target = event.target as HTMLElement;
-        if (!target.closest('.user-dropdown-container')) {
+        if (!target.closest('.user-dropdown-container') && !target.closest('.admin-dropdown-container')) {
           setShowDropdown(false);
+          setShowAdminDropdown(false);
         }
       }
     };
@@ -61,7 +75,7 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount }) => {
     return () => {
       document.removeEventListener('click', handleOutsideClick);
     };
-  }, [showDropdown]);
+  }, [showDropdown, showAdminDropdown]);
   
   return (
     <>
@@ -80,20 +94,67 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount }) => {
               {/* Temel Navigasyon Linkleri */}
               <li className="nav-item">
                 <a className="nav-link active" href="#hero-section" onClick={(e) => handleNavigation('hero-section', e)}>
-                  Home
+                  Anasayfa
                 </a>
               </li>
               <li className="nav-item">
                 <a className="nav-link" href="#products-section" onClick={(e) => handleNavigation('products-section', e)}>
-                  Products
+                  Ürünler
                 </a>
               </li>
+              
+              {/* Yönetim Paneli Dropdown - Yalnızca giriş yapmış kullanıcılar için */}
+              {user && user.isLoggedIn && (
+                <li className="nav-item admin-dropdown-container">
+                  <button 
+                    className="nav-link admin-dropdown-toggle"
+                    onClick={toggleAdminDropdown}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    Yönetim <i className={`bi bi-chevron-${showAdminDropdown ? 'up' : 'down'}`}></i>
+                  </button>
+                  
+                  {showAdminDropdown && (
+                    <div className="admin-dropdown-menu">
+                      <button 
+                        className={`dropdown-menu-item ${activeAdminPanel === 'stock' ? 'active' : ''}`} 
+                        onClick={() => handleAdminPanelSelect('stock')}
+                      >
+                        <i className="bi bi-box"></i> Stok Takibi
+                      </button>
+                      <button 
+                        className={`dropdown-menu-item ${activeAdminPanel === 'inventory' ? 'active' : ''}`} 
+                        onClick={() => handleAdminPanelSelect('inventory')}
+                      >
+                        <i className="bi bi-arrow-left-right"></i> Depo Giriş-Çıkış
+                      </button>
+                      <button 
+                        className={`dropdown-menu-item ${activeAdminPanel === 'finance' ? 'active' : ''}`} 
+                        onClick={() => handleAdminPanelSelect('finance')}
+                      >
+                        <i className="bi bi-cash-stack"></i> Gelir-Gider Takibi
+                      </button>
+                      {activeAdminPanel && (
+                        <>
+                          <div className="dropdown-divider"></div>
+                          <button 
+                            className="dropdown-menu-item text-danger" 
+                            onClick={() => setActiveAdminPanel(null)}
+                          >
+                            <i className="bi bi-x"></i> Paneli Kapat
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </li>
+              )}
             </ul>
             <div className="ms-3 d-flex align-items-center">
               <button
                 className="btn btn-outline-primary me-2 position-relative"
                 onClick={onCartClick} 
-                title="Shopping Cart" 
+                title="Alışveriş Sepeti" 
               >
                 <i className="bi bi-cart"></i>
                 {cartItemCount > 0 && (
@@ -115,17 +176,17 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount }) => {
                   
                   {showDropdown && (
                     <div className="user-dropdown-menu">
-                      <button className="dropdown-menu-item" onClick={() => openAuthModal('updateUser')}>Profile</button>
-                      <button className="dropdown-menu-item" onClick={() => openAuthModal('feedback')}>Feedback</button>
-                      <button className="dropdown-menu-item text-danger" onClick={() => openAuthModal('deleteAccount')}>Delete Account</button>
+                      <button className="dropdown-menu-item" onClick={() => openAuthModal('updateUser')}>Profil</button>
+                      <button className="dropdown-menu-item" onClick={() => openAuthModal('feedback')}>Geribildirim</button>
+                      <button className="dropdown-menu-item text-danger" onClick={() => openAuthModal('deleteAccount')}>Hesabı Sil</button>
                       <div className="dropdown-divider"></div>
-                      <button className="dropdown-menu-item" onClick={handleLogout}>Log Out</button>
+                      <button className="dropdown-menu-item" onClick={handleLogout}>Çıkış Yap</button>
                     </div>
                   )}
                 </div>
               ) : (
                 <button className="btn btn-primary" onClick={() => openAuthModal('login')}>
-                  Login / Register
+                  Giriş / Kayıt
                 </button>
               )}
             </div>

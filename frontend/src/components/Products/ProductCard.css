@@ -1,4 +1,3 @@
-
 .product-card {
     transition: transform 0.3s, box-shadow 0.3s;
     margin-bottom: 1.5rem;
@@ -60,6 +59,23 @@
     .product-image-container {
       height: 180px;
     }
+  }
+  
+  .category-badge .badge {
+    margin-right: 5px;
+  }
+  
+  /* Stok durumu rozetleri için eklenen stiller */
+  .badge.bg-danger {
+    background-color: #dc3545 !important;
+  }
+  
+  .badge.bg-warning {
+    background-color: #ffc107 !important;
+  }
+  
+  .badge.bg-success {
+    background-color: #28a745 !important;
   }
   
  

@@ -1,21 +1,40 @@
 /* Hero Bölümü (Kaldı) - KALMALI */
 .hero-section {
-    background-color: var(--background-color);
-    padding: 4rem 0;
-    margin-bottom: 2rem;
+    position: relative;
+    padding: 60px 0 80px;
+    overflow: hidden;
+    background-color: #ffffff; /* Navbar ile aynı arka plan */
+    margin-top: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+  }
+  
+  .hero-background {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+  
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 30px 0;
   }
   
   .hero-title {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     font-weight: 700;
-    margin-bottom: 1rem;
-    color: var(--text-dark);
+    margin-bottom: 20px;
+    color: #2d3748;
+    line-height: 1.2;
   }
   
   .hero-subtitle {
-    font-size: 1.2rem;
-    color: var(--text-muted);
-    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    color: #4a5568;
+    margin-bottom: 25px;
+    line-height: 1.6;
   }
   
   .hero-image {
@@ -23,11 +42,135 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   }
   
+  .hero-features {
+    margin-top: 25px;
+    margin-bottom: 25px;
+  }
+  
+  .feature-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 12px 18px;
+    background-color: #ffffff; /* Tek renk beyaz */
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border-left: 3px solid #3182ce;
+  }
+  
+  .feature-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  .feature-item i {
+    color: #3182ce;
+    font-size: 1.2rem;
+    margin-right: 12px;
+  }
+  
+  .feature-item span {
+    color: #2d3748;
+    font-weight: 500;
+  }
+  
+  .hero-graphics {
+    position: relative;
+    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .graphic-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .hero-circle {
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    background-color: #3182ce; /* Tek renk mavi */
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    box-shadow: 0 10px 25px rgba(49, 130, 206, 0.25);
+  }
+  
+  .floating-card {
+    position: absolute;
+    padding: 14px 18px;
+    background-color: #ffffff; /* Tek renk beyaz */
+    border-radius: 10px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 2;
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .floating-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(49, 130, 206, 0.15);
+  }
+  
+  .floating-card i {
+    font-size: 1.4rem;
+    color: #3182ce;
+  }
+  
+  .floating-card span {
+    font-weight: 600;
+    color: #2d3748;
+    letter-spacing: 0.3px;
+  }
+  
+  .card-1 {
+    top: 20%;
+    left: 12%;
+    animation: float 7s ease-in-out infinite;
+  }
+  
+  .card-2 {
+    top: 45%;
+    right: 12%;
+    animation: float 8s ease-in-out infinite 1s;
+  }
+  
+  .card-3 {
+    bottom: 22%;
+    left: 28%;
+    animation: float 6s ease-in-out infinite 0.5s;
+  }
+  
+  /* Yüzen animasyon efekti */
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+  
   /* Genel Bölüm Başlığı (Kaldı) - KALMALI */
   .section-title {
-    font-weight: 600;
+    font-weight: 700;
     position: relative;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.75rem;
+    color: #2d3748;
+    letter-spacing: 0.5px;
+    margin-bottom: 1.5rem;
   }
   
   .section-title:after {
@@ -35,9 +178,10 @@
     position: absolute;
     left: 0;
     bottom: 0;
-    width: 50px;
+    width: 60px;
     height: 3px;
-    background-color: var(--primary-color);
+    background-color: #3182ce; /* Tek renk mavi */
+    border-radius: 3px;
   }
   
   /* Emin olunmadığı için veya kalması istendiği için DOKUNULMADI */
@@ -73,13 +217,26 @@
   
   /* Responsive Stiller (Ana yapı kaldı) - KALMALI */
   @media (max-width: 768px) {
-    .hero-section {
-      padding: 2rem 0;
-      text-align: center;
+    .hero-title {
+      font-size: 2.2rem;
     }
   
-    .hero-image {
-      margin-top: 2rem;
+    .hero-subtitle {
+      font-size: 1rem;
+    }
+  
+    .hero-graphics {
+      height: 300px;
+      margin-top: 30px;
+    }
+  
+    .hero-circle {
+      width: 200px;
+      height: 200px;
+    }
+  
+    .floating-card {
+      padding: 10px 15px;
     }
   
     .section-title:after {
@@ -90,4 +247,46 @@
     .table-responsive { /* Sepet veya ürün listesi için olabilir */
       overflow-x: auto;
     }
+  }
+  
+  /* Butonlar için stil güncellemeleri */
+  .btn-primary {
+    background-color: #3182ce; /* Tek renk mavi */
+    border: none;
+    padding: 12px 28px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.25);
+    color: white;
+    letter-spacing: 0.4px;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(49, 130, 206, 0.35);
+    background-color: #2c5282; /* Hover durumunda koyu mavi */
+  }
+
+  body {
+    background-color: #f8f9fa; /* Tüm sayfa için açık gri arka plan */
+  }
+
+  .home-page {
+    background-color: #f8f9fa;
+  }
+
+  /* Ürünler bölümü için aynı stil */
+  #products-section {
+    margin-top: 40px;
+    padding: 40px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+  }
+
+  .section-title {
+    color: #2d3748;
+    font-weight: 700;
+    margin-bottom: 30px;
   }

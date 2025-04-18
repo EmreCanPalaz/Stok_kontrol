@@ -1,5 +1,15 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 
+// Geçici tip tanımlamaları
+export interface UserData {
+  username: string;
+  email: string;
+  isLoggedIn: boolean;
+  isAdmin?: boolean;
+  hasStockControlAccess?: boolean;
+}
+
+
 export interface ProductProps {
   id: number;
   title: string;
@@ -25,6 +35,15 @@ interface AppContextType {
   clearCart: () => void;
   translate: (key: string) => string;
   translateCustom: (turkishText: string, englishText: string) => string;
+  user: UserData | null;
+  login: (email: string, password: string) => boolean;
+  register: (username: string, email: string, password: string) => boolean;
+  logout: () => void;
+  updateUser: (currentPassword: string, newUsername?: string, newPassword?: string) => boolean;
+  deleteAccount: (password: string) => Promise<boolean>;
+  resetPassword: (email: string) => boolean;
+  submitFeedback: (rating: number, comment: string) => boolean;
+  isLoading: boolean;
 }
 
 // Context oluşturma 
@@ -35,6 +54,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
  
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartTotal, setCartTotal] = useState(0);
+  const [user, setUser] = useState<UserData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -102,13 +123,124 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const translate = (key: string): string => {
-    // Implement translation logic based on your needs
-    return key; // Temporary return the key itself
+   
+    return key; 
   };
 
   const translateCustom = (turkishText: string, englishText: string): string => {
-    // Implement custom translation logic
-    return englishText; // Default to English for now
+    
+    return englishText; 
+  };
+
+  // Authentication methods
+  const login = (email: string, password: string): boolean => {
+    setIsLoading(true);
+    //API çağrısı yapılacak yer
+    
+    
+    setTimeout(() => {
+      setUser({
+        username: 'demo_user',
+        email: email,
+        isLoggedIn: true
+      });
+      setIsLoading(false);
+    }, 1000);
+    
+    return true;
+  };
+
+  const register = (username: string, email: string, password: string): boolean => {
+    setIsLoading(true);
+    // API çağrısı yapılacak yer
+    
+    
+    setTimeout(() => {
+      setUser({
+        username: username,
+        email: email,
+        isLoggedIn: true
+      });
+      setIsLoading(false);
+    }, 1000);
+    
+    return true;
+  };
+
+  const logout = () => {
+    setUser(null);
+    // temizle
+  };
+
+  const updateUser = (currentPassword: string, newUsername?: string, newPassword?: string): boolean => {
+    if (!user) return false;
+    setIsLoading(true);
+    
+    // API çağrısı yapılacak yer 
+    
+    
+    setTimeout(() => {
+      setUser(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          username: newUsername || prev.username
+        };
+      });
+      setIsLoading(false);
+    }, 1000);
+    
+    return true;
+  };
+
+  const deleteAccount = async (password: string): Promise<boolean> => {
+    if (!user) return false;
+    setIsLoading(true);
+    
+    try {
+      // API çağrısı burada yapılır
+      // Bu örnek için sadece bir gecikme eklenmiştir
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Gerçek bir uygulamada burada API'ye istek yapılır
+      // Eğer API çağrısı başarılı olursa, kullanıcıyı silip state'i güncelleriz
+      
+      setUser(null); // Kullanıcı state'ini temizle
+      localStorage.removeItem('user'); // Depolanan kullanıcı bilgilerini temizle
+      
+      setIsLoading(false);
+      return true; // Başarılı
+    } catch (error) {
+      console.error('Hesap silme hatası:', error);
+      setIsLoading(false);
+      return false; // Başarısız
+    }
+  };
+
+  const resetPassword = (email: string): boolean => {
+    setIsLoading(true);
+    
+    // API çağrısı yapılacak yer
+    
+    
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    
+    return true;
+  };
+
+  const submitFeedback = (rating: number, comment: string): boolean => {
+    setIsLoading(true);
+    
+      // API çağrısı yapılacak yer
+    
+    
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    
+    return true;
   };
 
   
@@ -120,7 +252,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     updateItemQuantity,
     clearCart,
     translate,
-    translateCustom
+    translateCustom,
+    user,
+    login,
+    register,
+    logout,
+    updateUser,
+    deleteAccount,
+    resetPassword,
+    submitFeedback,
+    isLoading
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

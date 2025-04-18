@@ -8,18 +8,28 @@ import './HomePage.css';
 
 // HomePage component'i
 const HomePage: React.FC = () => {
- 
   const {
-    
     cartItems, 
-    addToCart, 
-   
+    addToCart,
     translate 
   } = useAppContext();
 
- 
-  const [showCart, setShowCart] = useState(false); 
+  const [showCart, setShowCart] = useState(false);
   
+  // Bootstrap JS'i dropdown için import ediyoruz
+  useEffect(() => {
+    // Bootstrap JS'i dynamically import etme
+    const loadBootstrapJS = async () => {
+      try {
+        const bootstrap = await import('bootstrap');
+        // Dropdown'ların çalışması için gerekli
+      } catch (error) {
+        console.error('Bootstrap JS yüklenemedi:', error);
+      }
+    };
+    
+    loadBootstrapJS();
+  }, []);
 
   const handleShopNow = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -29,78 +39,88 @@ const HomePage: React.FC = () => {
     }
   };
 
-  
   const toggleCart = () => {
     setShowCart(!showCart);
   };
 
-  
-
-
-  
   return (
     <div className="home-page">
-      
       <Navbar
         onCartClick={toggleCart}
         cartItemCount={cartItems.length}
       />
-
       
       {showCart && <Cart onClose={toggleCart} />}
 
-      
-
-
-      
-      <div className="hero-section" id="hero-section">
-        <div className="container">
-          <div className="row align-items-center">
-            <div className="col-md-6">
-              <h1 className="hero-title">{translate ? translate('heroTitle') : 'Welcome to ShopApp'}</h1>
-              <p className="hero-subtitle">{translate ? translate('heroSubtitle') : 'Find the best products here.'}</p>
-              <button
-                className="btn btn-primary btn-lg"
-                onClick={handleShopNow}
-                title={translate ? translate('heroButtonTitle') : 'Shop Now'}
-              >
-                {translate ? translate('heroButton') : 'Shop Now'}
-              </button>
-            </div>
-            <div className="col-md-6">
-              
-              <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8c2hvcHBpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=800&q=60"
-                className="img-fluid hero-image"
-                alt="Shopping banner" />
+      {/* Sayfa içeriğini container içine alarak kenarlarda boşluk bırakalım */}
+      <div className="container">
+        {/* Hero bölümü */}
+        <div className="hero-section" id="hero-section">
+          <div className="hero-background">
+            <div className="container">
+              <div className="row align-items-center">
+                <div className="col-md-6">
+                  <div className="hero-content">
+                    <h1 className="hero-title">Inventory Management System</h1>
+                    <p className="hero-subtitle">Efficiently track, manage, and optimize your inventory with our powerful solution.</p>
+                    <div className="hero-features">
+                      <div className="feature-item">
+                        <i className="bi bi-check-circle"></i>
+                        <span>Real-time stock tracking</span>
+                      </div>
+                      <div className="feature-item">
+                        <i className="bi bi-graph-up"></i>
+                        <span>Performance analytics</span>
+                      </div>
+                      <div className="feature-item">
+                        <i className="bi bi-bell"></i>
+                        <span>Low stock alerts</span>
+                      </div>
+                    </div>
+                    <button
+                      className="btn btn-primary mt-4"
+                      onClick={handleShopNow}
+                    >
+                      Explore Products
+                    </button>
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="hero-graphics">
+                    <div className="graphic-container">
+                      <div className="floating-card card-1">
+                        <i className="bi bi-box-seam"></i>
+                        <span>Inventory</span>
+                      </div>
+                      <div className="floating-card card-2">
+                        <i className="bi bi-bar-chart"></i>
+                        <span>Analytics</span>
+                      </div>
+                      <div className="floating-card card-3">
+                        <i className="bi bi-truck"></i>
+                        <span>Shipping</span>
+                      </div>
+                      <div className="hero-circle"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-     
-      <div className="container mt-5" id="products-section">
-        <div className="row">
-         
-
-          
-          <div className="col-lg-12"> 
-            <h2 className="section-title mb-4">
-              
-              {translate ? translate('productsAllTitle') : 'All Products'}
-            </h2>
-            
-            <ProductList
-              
-              onAddToCart={addToCart} 
-            />
-          </div>
+        {/* Ürünler bölümü */}
+        <div id="products-section">
+          <h2 className="section-title">All Products</h2>
+          <ProductList
+            onAddToCart={addToCart} 
+          />
         </div>
       </div>
+      
       <Footer />
     </div>
   );
 };
-
-
 
 export default HomePage;

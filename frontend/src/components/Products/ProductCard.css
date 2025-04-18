@@ -1,108 +1,248 @@
 .product-card {
-    transition: transform 0.3s, box-shadow 0.3s;
-    margin-bottom: 1.5rem;
-    border-radius: 0.5rem;
-    overflow: hidden;
-  }
-  
-  .product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  }
-  
-  
+  transition: transform 0.3s, box-shadow 0.3s;
+  margin-bottom: 1.5rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+
+.product-image-container {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: #f8f9fa;
+}
+
+
+.product-image {
+  max-height: 100%;
+  object-fit: contain;
+}
+
+
+.product-title {
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.product-description {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+
+.product-price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--secondary-color);
+}
+
+
+@media (max-width: 768px) {
   .product-image-container {
-    position: relative; 
-    height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    background-color: #f8f9fa;
+    height: 180px;
   }
-  
-  
-  .product-image {
-    max-height: 100%;
-    object-fit: contain;
+}
+
+.category-badge .badge {
+  margin-right: 5px;
+}
+
+/* Stok durumu rozetleri için eklenen stiller */
+.badge.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+.badge.bg-warning {
+  background-color: #ffc107 !important;
+}
+
+.badge.bg-success {
+  background-color: #28a745 !important;
+}
+
+/* Yıldız puanlama stili */
+.product-rating {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.product-stars {
+  display: flex;
+  margin-right: 5px;
+}
+
+.product-stars i {
+  margin-right: 2px;
+}
+
+.rating-text {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.no-rating {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Favorite button styling */
+.favorite-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.favorite-button:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
+}
+
+.favorite-button i {
+  color: #dc3545;
+  font-size: 1.2rem;
+}
+
+.favorite-button.favorited {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Share Modal Styles */
+.share-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+
+.share-modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  animation: fade-in 0.3s ease;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
   }
-  
-  
-  .product-title {
-    font-size: 1rem;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  
-  .product-description {
-    font-size: 0.85rem;
-    color: #6c757d;
-    margin-bottom: 1rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+}
+
+.share-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.share-modal-header h5 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.share-modal-body {
+  padding: 1rem;
+}
+
+.product-share-preview {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.share-product-image {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  margin-right: 15px;
+}
+
+.share-product-info h6 {
+  margin: 0 0 5px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.share-product-price {
+  color: #dc3545;
+  font-weight: 700;
+  margin: 0;
+}
+
+.share-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.share-buttons button {
+  flex: 1 0 calc(50% - 10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+.share-buttons button i {
+  font-size: 1.1rem;
+}
+
+@media (max-width: 480px) {
+  .share-buttons button {
+    flex: 1 0 100%;
   }
-  
-  
-  .product-price {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--secondary-color); 
-  }
-  
-  
-  @media (max-width: 768px) {
-    .product-image-container {
-      height: 180px;
-    }
-  }
-  
-  .category-badge .badge {
-    margin-right: 5px;
-  }
-  
-  /* Stok durumu rozetleri için eklenen stiller */
-  .badge.bg-danger {
-    background-color: #dc3545 !important;
-  }
-  
-  .badge.bg-warning {
-    background-color: #ffc107 !important;
-  }
-  
-  .badge.bg-success {
-    background-color: #28a745 !important;
-  }
-  
-  /* Yıldız puanlama stili */
-  .product-rating {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.5rem;
-  }
-  
-  .product-stars {
-    display: flex;
-    margin-right: 5px;
-  }
-  
-  .product-stars i {
-    margin-right: 2px;
-  }
-  
-  .rating-text {
-    font-size: 0.85rem;
-    color: #6c757d;
-  }
-  
-  .no-rating {
-    font-size: 0.85rem;
-    color: #6c757d;
-    font-style: italic;
-  }
-  
- 
+}

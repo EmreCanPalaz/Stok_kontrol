@@ -1,0 +1,54 @@
+.add-product-container {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.add-product-container h2 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #4a5568;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #3182ce;
+    box-shadow: 0 0 0 0.2rem rgba(49, 130, 206, 0.25);
+}
+
+/* Preview image if needed */
+.image-preview {
+    margin-top: 10px;
+    width: 100%;
+    max-height: 200px;
+    border-radius: 5px;
+    object-fit: contain;
+    border: 1px solid #e2e8f0;
+    padding: 5px;
+}
+
+.input-group-text {
+    background-color: #3182ce;
+    color: white;
+    border-color: #3182ce;
+}
+
+@media (max-width: 768px) {
+    .add-product-container {
+        padding: 15px;
+    }
+}

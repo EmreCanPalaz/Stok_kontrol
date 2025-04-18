@@ -1,0 +1,97 @@
+.filter-sort-container {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.filter-sort-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #fff;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.filter-sort-header h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.filter-sort-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.filter-sort-content.expanded {
+    max-height: 500px;
+    padding: 15px;
+}
+
+.filter-group {
+    margin-bottom: 20px;
+}
+
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.filter-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.form-select {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    cursor: pointer;
+}
+
+.price-range-inputs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.price-range-inputs .input-group {
+    flex: 1;
+}
+
+.input-group-text {
+    background-color: #f1f3f5;
+    border-color: #ced4da;
+    color: #495057;
+}
+
+.price-range-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.price-range-actions button {
+    flex: 1;
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .filter-sort-content.expanded {
+        padding: 10px;
+    }
+
+    .price-range-inputs {
+        flex-direction: column;
+        gap: 8px;
+    }
+}

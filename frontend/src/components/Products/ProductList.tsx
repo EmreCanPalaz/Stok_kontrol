@@ -58,29 +58,36 @@ const sampleProducts: ProductProps[] = [
     image: "https://fakestoreapi.com/img/71YAIFU48IL._AC_UL640_QL65_ML3_.jpg",
     stock: 0
   }
- 
+
 ];
 
 
 interface ProductListProps {
-  
-  onAddToCart: (product: ProductProps) => void; 
+  products?: ProductProps[];
+  onAddToCart: (product: ProductProps) => void;
 }
 
 
-const ProductList: React.FC<ProductListProps> = ({ onAddToCart }) => {
-  
-  const [products, setProducts] = useState<ProductProps[]>(sampleProducts);
+const ProductList: React.FC<ProductListProps> = ({ products: propProducts, onAddToCart }) => {
 
-  
+  const [products, setProducts] = useState<ProductProps[]>(propProducts || []);
+
+  // Update products when propProducts changes
+  useEffect(() => {
+    if (propProducts) {
+      setProducts(propProducts);
+    }
+  }, [propProducts]);
 
   return (
-    <div className="product-list container">
-      <div className="row">
+    <div className="product-list">
+      <div className="product-grid">
         {products.map(product => (
-          <div key={product.id} className="col-12 col-md-6 col-lg-4">
-            <ProductCard {...product} onAddToCart={() => onAddToCart(product)} />
-          </div>
+          <ProductCard
+            key={product.id}
+            {...product}
+            onAddToCart={() => onAddToCart(product)}
+          />
         ))}
       </div>
     </div>

@@ -15,8 +15,8 @@ export interface ProductProps {
   title: string;
   price: number;
   image: string;
-  description?: string; 
-  category?: string; 
+  description?: string;
+  category?: string;
   stock: number;
 }
 
@@ -90,19 +90,26 @@ interface AppContextType {
   resetPassword: (email: string) => boolean;
   submitFeedback: (rating: number, comment: string) => boolean;
   isLoading: boolean;
-  
+
+  // Favorites functionality
+  favoriteItems: ProductProps[];
+  addToFavorites: (product: ProductProps) => void;
+  removeFromFavorites: (productId: number) => void;
+  isFavorite: (productId: number) => boolean;
+
   // Stok takibi için fonksiyonlar
   products: ProductProps[];
   getStockStatus: (productId: number) => number;
   checkLowStockItems: () => ProductProps[];
   updateStock: (productId: number, newStock: number) => void;
-  
+  addProduct: (product: Omit<ProductProps, 'id'>) => ProductProps;
+
   // Depo Giriş-Çıkış işlemleri için
   inventoryTransactions: InventoryTransaction[];
   addInventoryTransaction: (transaction: Omit<InventoryTransaction, 'id' | 'date'>) => void;
   getInventoryTransactionsByProduct: (productId: number) => InventoryTransaction[];
   getInventoryTransactionsByType: (type: 'in' | 'out') => InventoryTransaction[];
-  
+
   // Gelir Gider işlemleri için
   financialTransactions: FinancialTransaction[];
   addFinancialTransaction: (transaction: Omit<FinancialTransaction, 'id' | 'date'>) => void;
@@ -110,11 +117,11 @@ interface AppContextType {
   getFinancialTransactionsByCategory: (category: string) => FinancialTransaction[];
   getFinancialTransactionsByType: (type: 'income' | 'expense') => FinancialTransaction[];
   getFinancialTransactionsByDateRange: (startDate: Date, endDate: Date) => FinancialTransaction[];
-  
+
   // UI State için
   activeAdminPanel: string | null;
   setActiveAdminPanel: (panel: string | null) => void;
-  
+
   // İşlem Geçmişi için
   activityLogs: ActivityLog[];
   addActivityLog: (log: Omit<ActivityLog, 'id' | 'date'>) => void;
@@ -122,7 +129,7 @@ interface AppContextType {
   getActivityLogsByUser: (username: string) => ActivityLog[];
   getActivityLogsByDateRange: (startDate: Date, endDate: Date) => ActivityLog[];
   clearActivityLogs: () => void; // İsteğe bağlı: Tüm logları temizleme (admin için)
-  
+
   // Yorum ve Puanlama için
   reviews: Review[];
   addReview: (review: Omit<Review, 'id' | 'date' | 'isApproved'>) => void;
@@ -138,13 +145,16 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // Context Provider bileşeni
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
- 
+
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartTotal, setCartTotal] = useState(0);
   const [user, setUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState<ProductProps[]>([]);
-  
+
+  // Favorites state
+  const [favoriteItems, setFavoriteItems] = useState<ProductProps[]>([]);
+
   // Yeni state değişkenleri
   const [inventoryTransactions, setInventoryTransactions] = useState<InventoryTransaction[]>([]);
   const [financialTransactions, setFinancialTransactions] = useState<FinancialTransaction[]>([]);
@@ -164,16 +174,32 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         localStorage.removeItem('cart'); // Hatalı veriyi temizle
       }
     }
+
+    // Load favorites from localStorage
+    const savedFavorites = localStorage.getItem('favorites');
+    if (savedFavorites) {
+      try {
+        const parsedFavorites = JSON.parse(savedFavorites);
+        setFavoriteItems(parsedFavorites);
+      } catch (e) {
+        console.error('Favoriler verisi ayrıştırılamadı:', e);
+        localStorage.removeItem('favorites');
+      }
+    }
   }, []); // Sadece başlangıçta çalışır
 
-  
+
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
 
-    
     const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     setCartTotal(total);
-  }, [cartItems]); 
+  }, [cartItems]);
+
+  // Save favorites to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('favorites', JSON.stringify(favoriteItems));
+  }, [favoriteItems]);
 
   // ProductList.tsx'ten örnek ürünleri context'e yükleyelim
   useEffect(() => {
@@ -234,32 +260,32 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         stock: 0
       }
     ];
-    
+
     setProducts(sampleProducts);
   }, []);
 
-  
+
   const addToCart = (product: ProductProps) => {
     // Stok kontrolü yap
     const currentProduct = products.find(p => p.id === product.id);
-    
+
     if (!currentProduct || currentProduct.stock <= 0) {
       alert('Bu ürün stokta bulunmamaktadır!');
       return;
     }
-    
+
     setCartItems(prevItems => {
       const existingItemIndex = prevItems.findIndex(item => item.id === product.id);
-      
+
       if (existingItemIndex >= 0) {
         // Mevcut miktar + 1, stok miktarını aşıyorsa uyarı ver
         const newQuantity = prevItems[existingItemIndex].quantity + 1;
-        
+
         if (newQuantity > currentProduct.stock) {
           alert(`Üzgünüz, bu üründen stokta sadece ${currentProduct.stock} adet kalmıştır.`);
           return prevItems;
         }
-        
+
         const updatedItems = [...prevItems];
         updatedItems[existingItemIndex].quantity += 1;
         return updatedItems;
@@ -267,18 +293,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return [...prevItems, { ...product, quantity: 1 }];
       }
     });
-    
+
     // Ürün sepete eklendiğinde stok miktarını düşürme (gerçek hayatta bu işlem
     // genellikle satın alma sırasında yapılır, ama örnek olarak ekledik)
     updateStock(product.id, currentProduct.stock - 1);
   };
 
-  
+
   const removeFromCart = (productId: number) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
   };
 
-  
+
   const updateItemQuantity = (productId: number, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeFromCart(productId);
@@ -293,28 +319,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     );
   };
 
-  
+
   const clearCart = () => {
     setCartItems([]);
-    localStorage.removeItem('cart'); 
+    localStorage.removeItem('cart');
   };
 
   const translate = (key: string): string => {
-   
-    return key; 
+
+    return key;
   };
 
   const translateCustom = (turkishText: string, englishText: string): string => {
-    
-    return englishText; 
+
+    return englishText;
   };
 
   // Authentication methods
   const login = (email: string, password: string): boolean => {
     setIsLoading(true);
     //API çağrısı yapılacak yer
-    
-    
+
+
     setTimeout(() => {
       setUser({
         username: 'demo_user',
@@ -323,15 +349,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
       setIsLoading(false);
     }, 1000);
-    
+
     return true;
   };
 
   const register = (username: string, email: string, password: string): boolean => {
     setIsLoading(true);
     // API çağrısı yapılacak yer
-    
-    
+
+
     setTimeout(() => {
       setUser({
         username: username,
@@ -340,7 +366,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
       setIsLoading(false);
     }, 1000);
-    
+
     return true;
   };
 
@@ -352,10 +378,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const updateUser = (currentPassword: string, newUsername?: string, newPassword?: string): boolean => {
     if (!user) return false;
     setIsLoading(true);
-    
+
     // API çağrısı yapılacak yer 
-    
-    
+
+
     setTimeout(() => {
       setUser(prev => {
         if (!prev) return null;
@@ -366,25 +392,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
       setIsLoading(false);
     }, 1000);
-    
+
     return true;
   };
 
   const deleteAccount = async (password: string): Promise<boolean> => {
     if (!user) return false;
     setIsLoading(true);
-    
+
     try {
       // API çağrısı burada yapılır
       // Bu örnek için sadece bir gecikme eklenmiştir
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Gerçek bir uygulamada burada API'ye istek yapılır
       // Eğer API çağrısı başarılı olursa, kullanıcıyı silip state'i güncelleriz
-      
+
       setUser(null); // Kullanıcı state'ini temizle
       localStorage.removeItem('user'); // Depolanan kullanıcı bilgilerini temizle
-      
+
       setIsLoading(false);
       return true; // Başarılı
     } catch (error) {
@@ -396,54 +422,54 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const resetPassword = (email: string): boolean => {
     setIsLoading(true);
-    
+
     // API çağrısı yapılacak yer
-    
-    
+
+
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-    
+
     return true;
   };
 
   const submitFeedback = (rating: number, comment: string): boolean => {
     setIsLoading(true);
-    
-      // API çağrısı yapılacak yer
-    
-    
+
+    // API çağrısı yapılacak yer
+
+
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-    
+
     return true;
   };
 
-  
+
   // Stok durumunu getir
   const getStockStatus = (productId: number): number => {
     const product = products.find(p => p.id === productId);
     return product ? product.stock : 0;
   };
-  
+
   // Stok miktarı az olan ürünleri kontrol et (stok < 10 olarak varsayıyoruz)
   const checkLowStockItems = (): ProductProps[] => {
     return products.filter(product => product.stock < 10);
   };
-  
+
   // Stok miktarını güncelle
   const updateStock = (productId: number, newStock: number) => {
     const oldProduct = products.find(p => p.id === productId);
-    
-    setProducts(prevProducts => 
-      prevProducts.map(product => 
-        product.id === productId 
-          ? { ...product, stock: newStock } 
+
+    setProducts(prevProducts =>
+      prevProducts.map(product =>
+        product.id === productId
+          ? { ...product, stock: newStock }
           : product
       )
     );
-    
+
     // İşlem logunu ekle
     if (oldProduct) {
       addActivityLog({
@@ -467,20 +493,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       id: Date.now(),
       date: new Date()
     };
-    
+
     setInventoryTransactions(prev => [...prev, newTransaction]);
-    
+
     // Stok miktarını güncelle
     const product = products.find(p => p.id === transaction.productId);
     if (product) {
-      const newStock = transaction.type === 'in' 
-        ? product.stock + transaction.quantity 
+      const newStock = transaction.type === 'in'
+        ? product.stock + transaction.quantity
         : product.stock - transaction.quantity;
-      
+
       // Stok negatif olmasın
       updateStock(product.id, Math.max(0, newStock));
     }
-    
+
     // İşlem logunu ekle
     addActivityLog({
       action: `inventory_${transaction.type}`,
@@ -492,15 +518,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       performedBy: user?.username || 'Misafir Kullanıcı'
     });
   };
-  
+
   const getInventoryTransactionsByProduct = (productId: number) => {
     return inventoryTransactions.filter(t => t.productId === productId);
   };
-  
+
   const getInventoryTransactionsByType = (type: 'in' | 'out') => {
     return inventoryTransactions.filter(t => t.type === type);
   };
-  
+
   // Gelir Gider işlemleri
   const addFinancialTransaction = (transaction: Omit<FinancialTransaction, 'id' | 'date'>) => {
     const newTransaction: FinancialTransaction = {
@@ -508,9 +534,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       id: Date.now(),
       date: new Date()
     };
-    
+
     setFinancialTransactions(prev => [...prev, newTransaction]);
-    
+
     // İşlem logunu ekle
     addActivityLog({
       action: `finance_${transaction.type}`,
@@ -521,37 +547,37 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       performedBy: user?.username || 'Misafir Kullanıcı'
     });
   };
-  
+
   const getFinancialSummary = () => {
     const totalIncome = financialTransactions
       .filter(t => t.type === 'income')
       .reduce((sum, t) => sum + t.amount, 0);
-      
+
     const totalExpense = financialTransactions
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
-      
+
     return {
       totalIncome,
       totalExpense,
       balance: totalIncome - totalExpense
     };
   };
-  
+
   const getFinancialTransactionsByCategory = (category: string) => {
     return financialTransactions.filter(t => t.category === category);
   };
-  
+
   const getFinancialTransactionsByType = (type: 'income' | 'expense') => {
     return financialTransactions.filter(t => t.type === type);
   };
-  
+
   const getFinancialTransactionsByDateRange = (startDate: Date, endDate: Date) => {
-    return financialTransactions.filter(t => 
+    return financialTransactions.filter(t =>
       t.date >= startDate && t.date <= endDate
     );
   };
-  
+
   // İşlem Geçmişi işlemleri
   const addActivityLog = (log: Omit<ActivityLog, 'id' | 'date'>) => {
     const newLog: ActivityLog = {
@@ -559,13 +585,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       id: Date.now(),
       date: new Date()
     };
-    
+
     setActivityLogs(prev => [newLog, ...prev]); // Yeni log'u başa ekle
-    
+
     // Gerçek uygulamada, logları localStorage veya backend'de saklayabilirsiniz
     const savedLogs = localStorage.getItem('activityLogs');
     let updatedLogs = [];
-    
+
     if (savedLogs) {
       try {
         updatedLogs = [newLog, ...JSON.parse(savedLogs)];
@@ -575,10 +601,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     } else {
       updatedLogs = [newLog];
     }
-    
+
     localStorage.setItem('activityLogs', JSON.stringify(updatedLogs));
   };
-  
+
   // Sayfa yüklendiğinde localStorage'dan logları al
   useEffect(() => {
     const savedLogs = localStorage.getItem('activityLogs');
@@ -590,7 +616,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           ...log,
           date: new Date(log.date)
         }));
-        
+
         setActivityLogs(formattedLogs);
       } catch (e) {
         console.error('İşlem geçmişi yüklenirken hata oluştu:', e);
@@ -598,26 +624,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
     }
   }, []); // Sadece başlangıçta çalış
-  
+
   const getActivityLogsByAction = (action: string) => {
     return activityLogs.filter(log => log.action === action);
   };
-  
+
   const getActivityLogsByUser = (username: string) => {
     return activityLogs.filter(log => log.performedBy === username);
   };
-  
+
   const getActivityLogsByDateRange = (startDate: Date, endDate: Date) => {
-    return activityLogs.filter(log => 
+    return activityLogs.filter(log =>
       log.date >= startDate && log.date <= endDate
     );
   };
-  
+
   const clearActivityLogs = () => {
     setActivityLogs([]);
     localStorage.removeItem('activityLogs');
   };
-  
+
   // Başlangıçta localStorage'dan yorumları yükle
   useEffect(() => {
     const savedReviews = localStorage.getItem('productReviews');
@@ -629,7 +655,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           ...review,
           date: new Date(review.date)
         }));
-        
+
         setReviews(formattedReviews);
       } catch (e) {
         console.error('Yorumlar yüklenirken hata oluştu:', e);
@@ -637,12 +663,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
     }
   }, []); // Sadece başlangıçta çalış
-  
+
   // Yorumları localStorage'a kaydet
   useEffect(() => {
     localStorage.setItem('productReviews', JSON.stringify(reviews));
   }, [reviews]);
-  
+
   // Yorum ekleme fonksiyonu
   const addReview = (review: Omit<Review, 'id' | 'date' | 'isApproved'>) => {
     const newReview: Review = {
@@ -651,9 +677,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       date: new Date(),
       isApproved: false // Varsayılan olarak onaylanmamış durumda
     };
-    
+
     setReviews(prev => [newReview, ...prev]);
-    
+
     // İşlem loguna ekle
     addActivityLog({
       action: 'review_add',
@@ -665,14 +691,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       performedBy: user?.username || 'Misafir Kullanıcı'
     });
   };
-  
+
   // Yorum silme fonksiyonu
   const deleteReview = (reviewId: number) => {
     const reviewToDelete = reviews.find(r => r.id === reviewId);
-    
+
     if (reviewToDelete) {
       setReviews(prev => prev.filter(r => r.id !== reviewId));
-      
+
       // İşlem loguna ekle
       addActivityLog({
         action: 'review_delete',
@@ -685,19 +711,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
     }
   };
-  
+
   // Yorum onaylama fonksiyonu
   const approveReview = (reviewId: number) => {
-    setReviews(prev => 
-      prev.map(review => 
-        review.id === reviewId 
-          ? { ...review, isApproved: true } 
+    setReviews(prev =>
+      prev.map(review =>
+        review.id === reviewId
+          ? { ...review, isApproved: true }
           : review
       )
     );
-    
+
     const approvedReview = reviews.find(r => r.id === reviewId);
-    
+
     if (approvedReview) {
       // İşlem loguna ekle
       addActivityLog({
@@ -711,29 +737,95 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
     }
   };
-  
+
   // Ürüne göre yorumları getirme fonksiyonu
   const getReviewsByProduct = (productId: number) => {
     return reviews.filter(review => review.productId === productId);
   };
-  
+
   // Kullanıcıya göre yorumları getirme fonksiyonu
   const getReviewsByUser = (userId: string) => {
     return reviews.filter(review => review.userId === userId);
   };
-  
+
   // Ortalama puanı hesaplama fonksiyonu
   const getAverageRating = (productId: number) => {
     const productReviews = reviews.filter(
       review => review.productId === productId && review.isApproved
     );
-    
+
     if (productReviews.length === 0) return 0;
-    
+
     const totalRating = productReviews.reduce((sum, review) => sum + review.rating, 0);
     return totalRating / productReviews.length;
   };
-  
+
+  // Add to favorites function
+  const addToFavorites = (product: ProductProps) => {
+    // Check if product already exists in favorites
+    if (!favoriteItems.some(item => item.id === product.id)) {
+      setFavoriteItems(prev => [...prev, product]);
+
+      // Log activity if user is logged in
+      if (user && user.isLoggedIn) {
+        addActivityLog({
+          action: 'add_to_favorites',
+          description: `Added ${product.title} to favorites`,
+          details: { productId: product.id },
+          performedBy: user.username
+        });
+      }
+    }
+  };
+
+  // Remove from favorites function
+  const removeFromFavorites = (productId: number) => {
+    setFavoriteItems(prev => prev.filter(item => item.id !== productId));
+
+    // Log activity if user is logged in
+    if (user && user.isLoggedIn) {
+      const product = products.find(p => p.id === productId);
+      if (product) {
+        addActivityLog({
+          action: 'remove_from_favorites',
+          description: `Removed ${product.title} from favorites`,
+          details: { productId },
+          performedBy: user.username
+        });
+      }
+    }
+  };
+
+  // Check if a product is in favorites
+  const isFavorite = (productId: number): boolean => {
+    return favoriteItems.some(item => item.id === productId);
+  };
+
+  const addProduct = (product: Omit<ProductProps, 'id'>) => {
+    // Yeni ürün ID'si - en büyük ID'nin bir fazlası
+    const newId = products.length > 0
+      ? Math.max(...products.map(p => p.id)) + 1
+      : 1;
+
+    // Yeni ürünü products listesine ekle
+    const newProduct: ProductProps = {
+      ...product,
+      id: newId
+    };
+
+    setProducts(prevProducts => [...prevProducts, newProduct]);
+
+    // Aktivite loguna ekle
+    addActivityLog({
+      action: 'product_added',
+      description: `Yeni ürün eklendi: ${product.title}`,
+      details: { product: newProduct },
+      performedBy: user?.username || 'Misafir Kullanıcı'
+    });
+
+    return newProduct;
+  };
+
   const value: AppContextType = {
     cartItems,
     cartTotal,
@@ -752,18 +844,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     resetPassword,
     submitFeedback,
     isLoading,
-    // Stok takibi fonksiyonları
+
+    // Favorites
+    favoriteItems,
+    addToFavorites,
+    removeFromFavorites,
+    isFavorite,
+
+    // Stok takibi için fonksiyonlar
     products,
     getStockStatus,
     checkLowStockItems,
     updateStock,
-    
+    addProduct,
+
     // Depo Giriş-Çıkış için
     inventoryTransactions,
     addInventoryTransaction,
     getInventoryTransactionsByProduct,
     getInventoryTransactionsByType,
-    
+
     // Gelir Gider için
     financialTransactions,
     addFinancialTransaction,
@@ -771,11 +871,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     getFinancialTransactionsByCategory,
     getFinancialTransactionsByType,
     getFinancialTransactionsByDateRange,
-    
+
     // UI State
     activeAdminPanel,
     setActiveAdminPanel,
-    
+
     // İşlem Geçmişi için
     activityLogs,
     addActivityLog,
@@ -783,7 +883,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     getActivityLogsByUser,
     getActivityLogsByDateRange,
     clearActivityLogs,
-    
+
     // Yorum ve Puanlama için
     reviews,
     addReview,

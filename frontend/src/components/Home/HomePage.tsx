@@ -10,8 +10,7 @@ import './HomePage.css';
 const HomePage: React.FC = () => {
   const {
     cartItems, 
-    addToCart,
-    translate 
+    addToCart
   } = useAppContext();
 
   const [showCart, setShowCart] = useState(false);
@@ -52,69 +51,51 @@ const HomePage: React.FC = () => {
       
       {showCart && <Cart onClose={toggleCart} />}
 
-      {/* Sayfa içeriğini container içine alarak kenarlarda boşluk bırakalım */}
-      <div className="container">
-        {/* Hero bölümü */}
+      <div className="container mt-4">
         <div className="hero-section" id="hero-section">
-          <div className="hero-background">
-            <div className="container">
-              <div className="row align-items-center">
-                <div className="col-md-6">
-                  <div className="hero-content">
-                    <h1 className="hero-title">Inventory Management System</h1>
-                    <p className="hero-subtitle">Efficiently track, manage, and optimize your inventory with our powerful solution.</p>
-                    <div className="hero-features">
-                      <div className="feature-item">
-                        <i className="bi bi-check-circle"></i>
-                        <span>Real-time stock tracking</span>
-                      </div>
-                      <div className="feature-item">
-                        <i className="bi bi-graph-up"></i>
-                        <span>Performance analytics</span>
-                      </div>
-                      <div className="feature-item">
-                        <i className="bi bi-bell"></i>
-                        <span>Low stock alerts</span>
-                      </div>
-                    </div>
-                    <button
-                      className="btn btn-primary mt-4"
-                      onClick={handleShopNow}
-                    >
-                      Explore Products
-                    </button>
-                  </div>
+          <div className="row align-items-center">
+            <div className="col-md-6">
+              <h1 className="hero-title">Inventory <span>Management</span> System</h1>
+              <p className="hero-subtitle">Efficiently track, manage, and optimize your inventory with our powerful solution.</p>
+              
+              <div className="feature-list mt-4">
+                <div className="feature-item">
+                  <i className="bi bi-check-circle text-success me-2"></i>
+                  <span>Real-time stock tracking</span>
                 </div>
-                <div className="col-md-6">
-                  <div className="hero-graphics">
-                    <div className="graphic-container">
-                      <div className="floating-card card-1">
-                        <i className="bi bi-box-seam"></i>
-                        <span>Inventory</span>
-                      </div>
-                      <div className="floating-card card-2">
-                        <i className="bi bi-bar-chart"></i>
-                        <span>Analytics</span>
-                      </div>
-                      <div className="floating-card card-3">
-                        <i className="bi bi-truck"></i>
-                        <span>Shipping</span>
-                      </div>
-                      <div className="hero-circle"></div>
-                    </div>
-                  </div>
+                <div className="feature-item">
+                  <i className="bi bi-graph-up text-success me-2"></i>
+                  <span>Performance analytics</span>
+                </div>
+                <div className="feature-item">
+                  <i className="bi bi-bell text-success me-2"></i>
+                  <span>Low stock alerts</span>
+                </div>
+              </div>
+              
+              <button
+                className="btn btn-primary mt-4"
+                onClick={handleShopNow}
+              >
+                <i className="bi bi-box-arrow-right me-2"></i>
+                Explore Products
+              </button>
+            </div>
+            
+            <div className="col-md-6">
+              <div className="hero-image-container">
+                <div className="earth-globe">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/1200px-The_Earth_seen_from_Apollo_17.jpg" alt="Earth" />
+                  <div className="earth-glow"></div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Ürünler bölümü */}
-        <div id="products-section">
+        <div className="mt-5" id="products-section">
           <h2 className="section-title">All Products</h2>
-          <ProductList
-            onAddToCart={addToCart} 
-          />
+          <ProductList onAddToCart={addToCart} />
         </div>
       </div>
       

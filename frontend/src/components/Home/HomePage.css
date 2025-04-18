@@ -1,0 +1,93 @@
+/* Hero Bölümü (Kaldı) - KALMALI */
+.hero-section {
+    background-color: var(--background-color);
+    padding: 4rem 0;
+    margin-bottom: 2rem;
+  }
+  
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+  }
+  
+  .hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+  }
+  
+  .hero-image {
+    border-radius: 0.5rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Genel Bölüm Başlığı (Kaldı) - KALMALI */
+  .section-title {
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 0.5rem;
+  }
+  
+  .section-title:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 3px;
+    background-color: var(--primary-color);
+  }
+  
+  /* Emin olunmadığı için veya kalması istendiği için DOKUNULMADI */
+  .feature-item {
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    height: 100%;
+  }
+  
+  .feature-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+  }
+  
+  /* Sepet Stilleri (Sepet kaldı) - KALMALI */
+  .cart-item-image {
+    max-width: 50px;
+    max-height: 50px;
+    object-fit: contain;
+  }
+  
+  .table thead th {
+    border-top: none;
+    border-bottom: 2px solid #dee2e6;
+  }
+  
+  .table tbody td {
+    vertical-align: middle;
+  }
+  
+  /* Responsive Stiller (Ana yapı kaldı) - KALMALI */
+  @media (max-width: 768px) {
+    .hero-section {
+      padding: 2rem 0;
+      text-align: center;
+    }
+  
+    .hero-image {
+      margin-top: 2rem;
+    }
+  
+    .section-title:after {
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  
+    .table-responsive { /* Sepet veya ürün listesi için olabilir */
+      overflow-x: auto;
+    }
+  }

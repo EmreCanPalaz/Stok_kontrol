@@ -1,0 +1,32 @@
+/* Global Renk Paleti - colors.css */
+:root {
+    /* Ana renkler */
+    --primary-color: #1D3557;    /* Lacivert ton */
+    --secondary-color: #E63946;  /* Kırmızı ton */
+    --background-color: #F1FAEE; /* Açık gri/beyaz */  
+    --accent-color: #A8DADC;     /* Turkuaz ton */
+    
+    /* Bootstrap ile uyumluluk */
+    --bs-primary: #1D3557;
+    --bs-secondary: #E63946;
+    --bs-light: #F1FAEE;
+    --bs-info: #A8DADC;
+    
+    /* Türevler */
+    --primary-darker: #152639;
+    --primary-lighter: #2A4A75;
+    --secondary-darker: #C42836;
+    --secondary-lighter: #F05964;
+    --accent-darker: #8EC2C5;
+    --accent-lighter: #C2E5E7;
+    
+    /* Metin renkleri */
+    --text-dark: #1D3557;
+    --text-light: #F1FAEE;
+    --text-muted: #6c757d;
+    
+    /* Diğer */
+    --border-color: #dee2e6;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+  }
+  

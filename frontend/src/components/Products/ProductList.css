@@ -1,0 +1,17 @@
+.product-list {
+    padding: 2rem 0;
+  }
+  
+  @media (max-width: 768px) {
+    .product-list .row {
+      margin-left: -8px;
+      margin-right: -8px;
+    }
+    
+    .product-list .col-12,
+    .product-list .col-md-6,
+    .product-list .col-lg-4 {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+  } 

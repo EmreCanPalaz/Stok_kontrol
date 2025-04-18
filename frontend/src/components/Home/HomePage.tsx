@@ -5,13 +5,15 @@ import Footer from '../Footer/Footer';
 import Cart from '../Cart/Cart';
 import { useAppContext } from '../../context/AppContext';
 import './HomePage.css';
+import AdminPanel from '../Admin/AdminPanel';
 
 // HomePage component'i
 const HomePage: React.FC = () => {
   const {
     cartItems, 
     addToCart,
-    translate 
+    translate,
+    activeAdminPanel
   } = useAppContext();
 
   const [showCart, setShowCart] = useState(false);
@@ -51,6 +53,8 @@ const HomePage: React.FC = () => {
       />
       
       {showCart && <Cart onClose={toggleCart} />}
+      
+      {activeAdminPanel && <AdminPanel />}
 
       {/* Sayfa içeriğini container içine alarak kenarlarda boşluk bırakalım */}
       <div className="container">

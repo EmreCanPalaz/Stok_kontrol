@@ -50,6 +50,16 @@ export interface FinancialTransaction {
   relatedProductId?: number; // İlişkili ürün, eğer varsa
 }
 
+// İşlem Geçmişi için model
+export interface ActivityLog {
+  id: number;
+  action: string; // İşlemin türü (örn: "stock_update", "inventory_in", "finance_income")
+  description: string; // İşlemin açıklaması
+  details: any; // İşlemin detayları (JSON olarak saklanabilir)
+  performedBy: string; // İşlemi yapan kullanıcı
+  date: Date; // İşlem tarihi
+}
+
 interface AppContextType {
   cartItems: CartItem[];
   cartTotal: number;
@@ -92,6 +102,14 @@ interface AppContextType {
   // UI State için
   activeAdminPanel: string | null;
   setActiveAdminPanel: (panel: string | null) => void;
+  
+  // İşlem Geçmişi için
+  activityLogs: ActivityLog[];
+  addActivityLog: (log: Omit<ActivityLog, 'id' | 'date'>) => void;
+  getActivityLogsByAction: (action: string) => ActivityLog[];
+  getActivityLogsByUser: (username: string) => ActivityLog[];
+  getActivityLogsByDateRange: (startDate: Date, endDate: Date) => ActivityLog[];
+  clearActivityLogs: () => void; // İsteğe bağlı: Tüm logları temizleme (admin için)
 }
 
 // Context oluşturma 
@@ -110,6 +128,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [inventoryTransactions, setInventoryTransactions] = useState<InventoryTransaction[]>([]);
   const [financialTransactions, setFinancialTransactions] = useState<FinancialTransaction[]>([]);
   const [activeAdminPanel, setActiveAdminPanel] = useState<string | null>(null);
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
 
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -393,6 +412,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   // Stok miktarını güncelle
   const updateStock = (productId: number, newStock: number) => {
+    const oldProduct = products.find(p => p.id === productId);
+    
     setProducts(prevProducts => 
       prevProducts.map(product => 
         product.id === productId 
@@ -400,13 +421,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           : product
       )
     );
+    
+    // İşlem logunu ekle
+    if (oldProduct) {
+      addActivityLog({
+        action: 'stock_update',
+        description: `"${oldProduct.title}" ürününün stok miktarı güncellendi`,
+        details: {
+          productId,
+          oldStock: oldProduct.stock,
+          newStock,
+          productName: oldProduct.title
+        },
+        performedBy: user?.username || 'Misafir Kullanıcı'
+      });
+    }
   };
 
   // Depo Giriş-Çıkış işlemleri
   const addInventoryTransaction = (transaction: Omit<InventoryTransaction, 'id' | 'date'>) => {
     const newTransaction: InventoryTransaction = {
       ...transaction,
-      id: Date.now(), // Basit bir ID oluşturma yöntemi
+      id: Date.now(),
       date: new Date()
     };
     
@@ -422,6 +458,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       // Stok negatif olmasın
       updateStock(product.id, Math.max(0, newStock));
     }
+    
+    // İşlem logunu ekle
+    addActivityLog({
+      action: `inventory_${transaction.type}`,
+      description: `"${transaction.productName}" için ${transaction.type === 'in' ? 'giriş' : 'çıkış'} işlemi yapıldı`,
+      details: {
+        ...transaction,
+        productName: transaction.productName
+      },
+      performedBy: user?.username || 'Misafir Kullanıcı'
+    });
   };
   
   const getInventoryTransactionsByProduct = (productId: number) => {
@@ -436,11 +483,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const addFinancialTransaction = (transaction: Omit<FinancialTransaction, 'id' | 'date'>) => {
     const newTransaction: FinancialTransaction = {
       ...transaction,
-      id: Date.now(), // Basit bir ID oluşturma yöntemi
+      id: Date.now(),
       date: new Date()
     };
     
     setFinancialTransactions(prev => [...prev, newTransaction]);
+    
+    // İşlem logunu ekle
+    addActivityLog({
+      action: `finance_${transaction.type}`,
+      description: `${transaction.type === 'income' ? 'Gelir' : 'Gider'} işlemi: ${transaction.description}`,
+      details: {
+        ...transaction
+      },
+      performedBy: user?.username || 'Misafir Kullanıcı'
+    });
   };
   
   const getFinancialSummary = () => {
@@ -471,6 +528,72 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return financialTransactions.filter(t => 
       t.date >= startDate && t.date <= endDate
     );
+  };
+  
+  // İşlem Geçmişi işlemleri
+  const addActivityLog = (log: Omit<ActivityLog, 'id' | 'date'>) => {
+    const newLog: ActivityLog = {
+      ...log,
+      id: Date.now(),
+      date: new Date()
+    };
+    
+    setActivityLogs(prev => [newLog, ...prev]); // Yeni log'u başa ekle
+    
+    // Gerçek uygulamada, logları localStorage veya backend'de saklayabilirsiniz
+    const savedLogs = localStorage.getItem('activityLogs');
+    let updatedLogs = [];
+    
+    if (savedLogs) {
+      try {
+        updatedLogs = [newLog, ...JSON.parse(savedLogs)];
+      } catch (e) {
+        updatedLogs = [newLog];
+      }
+    } else {
+      updatedLogs = [newLog];
+    }
+    
+    localStorage.setItem('activityLogs', JSON.stringify(updatedLogs));
+  };
+  
+  // Sayfa yüklendiğinde localStorage'dan logları al
+  useEffect(() => {
+    const savedLogs = localStorage.getItem('activityLogs');
+    if (savedLogs) {
+      try {
+        const parsedLogs = JSON.parse(savedLogs);
+        // Date nesnelerini string'den Date'e çevir
+        const formattedLogs = parsedLogs.map((log: any) => ({
+          ...log,
+          date: new Date(log.date)
+        }));
+        
+        setActivityLogs(formattedLogs);
+      } catch (e) {
+        console.error('İşlem geçmişi yüklenirken hata oluştu:', e);
+        localStorage.removeItem('activityLogs');
+      }
+    }
+  }, []); // Sadece başlangıçta çalış
+  
+  const getActivityLogsByAction = (action: string) => {
+    return activityLogs.filter(log => log.action === action);
+  };
+  
+  const getActivityLogsByUser = (username: string) => {
+    return activityLogs.filter(log => log.performedBy === username);
+  };
+  
+  const getActivityLogsByDateRange = (startDate: Date, endDate: Date) => {
+    return activityLogs.filter(log => 
+      log.date >= startDate && log.date <= endDate
+    );
+  };
+  
+  const clearActivityLogs = () => {
+    setActivityLogs([]);
+    localStorage.removeItem('activityLogs');
   };
   
   const value: AppContextType = {
@@ -513,7 +636,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     // UI State
     activeAdminPanel,
-    setActiveAdminPanel
+    setActiveAdminPanel,
+    
+    // İşlem Geçmişi için
+    activityLogs,
+    addActivityLog,
+    getActivityLogsByAction,
+    getActivityLogsByUser,
+    getActivityLogsByDateRange,
+    clearActivityLogs
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

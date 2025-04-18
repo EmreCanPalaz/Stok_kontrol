@@ -18,6 +18,7 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAdminDropdown, setShowAdminDropdown] = useState(false);
   const [initialAuthForm, setInitialAuthForm] = useState<'login' | 'register' | 'deleteAccount' | 'updateUser' | 'feedback'>('login');
+  const [showAdminModal, setShowAdminModal] = useState(false);
 
   
   const handleNavigation = (id: string, e: React.MouseEvent) => {
@@ -58,6 +59,10 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount }) => {
     console.log('Panel seçildi:', panel);
     setActiveAdminPanel(panel);
     setShowAdminDropdown(false);
+  };
+  
+  const toggleAdminModal = () => {
+    setShowAdminModal(!showAdminModal);
   };
   
   React.useEffect(() => {
@@ -134,6 +139,12 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount }) => {
                       >
                         <i className="bi bi-cash-stack"></i> Gelir-Gider Takibi
                       </button>
+                      <button 
+                        className={`dropdown-menu-item ${activeAdminPanel === 'activity' ? 'active' : ''}`} 
+                        onClick={() => handleAdminPanelSelect('activity')}
+                      >
+                        <i className="bi bi-clock-history"></i> İşlem Geçmişi
+                      </button>
                       {activeAdminPanel && (
                         <>
                           <div className="dropdown-divider"></div>
@@ -196,6 +207,59 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount }) => {
       
       {/* Auth Modal */}
       {showAuthModal && <AuthForms onClose={toggleAuthModal} initialForm={initialAuthForm} />}
+      
+      {showAdminModal && (
+        <div className="admin-modal-overlay">
+          <div className="admin-modal">
+            <div className="admin-modal-header">
+              <h3>Yönetim Paneli</h3>
+              <button className="close-button" onClick={toggleAdminModal}>
+                <i className="bi bi-x-lg"></i>
+              </button>
+            </div>
+            <div className="admin-modal-body">
+              <div className="admin-menu">
+                <div className="admin-menu-item" onClick={() => handleAdminPanelSelect('stock')}>
+                  <div className="admin-menu-icon">
+                    <i className="bi bi-box"></i>
+                  </div>
+                  <div className="admin-menu-text">
+                    <h4>Stok Takibi</h4>
+                    <p>Ürünlerin stok durumunu takip etme ve güncelleme</p>
+                  </div>
+                </div>
+                <div className="admin-menu-item" onClick={() => handleAdminPanelSelect('inventory')}>
+                  <div className="admin-menu-icon">
+                    <i className="bi bi-arrow-left-right"></i>
+                  </div>
+                  <div className="admin-menu-text">
+                    <h4>Depo Giriş-Çıkış</h4>
+                    <p>Depoya giren ve çıkan ürünleri takip etme</p>
+                  </div>
+                </div>
+                <div className="admin-menu-item" onClick={() => handleAdminPanelSelect('finance')}>
+                  <div className="admin-menu-icon">
+                    <i className="bi bi-cash-stack"></i>
+                  </div>
+                  <div className="admin-menu-text">
+                    <h4>Gelir-Gider Takibi</h4>
+                    <p>Satış ve harcamaları izleyerek finansal durumu kontrol etme</p>
+                  </div>
+                </div>
+                <div className="admin-menu-item" onClick={() => handleAdminPanelSelect('activity')}>
+                  <div className="admin-menu-icon">
+                    <i className="bi bi-clock-history"></i>
+                  </div>
+                  <div className="admin-menu-text">
+                    <h4>İşlem Geçmişi</h4>
+                    <p>Yapılan tüm işlemlerin kaydını tutarak geçmişe dönük inceleme yapma</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

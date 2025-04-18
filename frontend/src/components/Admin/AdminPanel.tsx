@@ -4,6 +4,7 @@ import StockControl from '../Stock Control/StockControl';
 import InventoryTracker from '../Inventory/InventoryTracker';
 import FinanceTracker from '../Finance/FinanceTracker';
 import ActivityLog from '../Activity/ActivityLog';
+import AdminReviews from '../Reviews/AdminReviews';
 import './AdminPanel.css';
 
 const AdminPanel: React.FC = () => {
@@ -19,13 +20,15 @@ const AdminPanel: React.FC = () => {
         {activeAdminPanel === 'stock' ? 'Stok Takibi' : 
          activeAdminPanel === 'inventory' ? 'Depo Giriş-Çıkış Takibi' : 
          activeAdminPanel === 'finance' ? 'Gelir-Gider Takibi' : 
-         activeAdminPanel === 'activity' ? 'İşlem Geçmişi' : 'Bilinmeyen Panel'}
+         activeAdminPanel === 'activity' ? 'İşlem Geçmişi' : 
+         activeAdminPanel === 'reviews' ? 'Yorum Yönetimi' : 'Bilinmeyen Panel'}
       </h3>
       
       {activeAdminPanel === 'stock' && <StockControl />}
       {activeAdminPanel === 'inventory' && <InventoryTracker />}
       {activeAdminPanel === 'finance' && <FinanceTracker />}
       {activeAdminPanel === 'activity' && <ActivityLog />}
+      {activeAdminPanel === 'reviews' && <AdminReviews />}
     </div>
   );
 };

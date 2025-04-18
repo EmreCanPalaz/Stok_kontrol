@@ -78,4 +78,31 @@
     background-color: #28a745 !important;
   }
   
+  /* Yıldız puanlama stili */
+  .product-rating {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  
+  .product-stars {
+    display: flex;
+    margin-right: 5px;
+  }
+  
+  .product-stars i {
+    margin-right: 2px;
+  }
+  
+  .rating-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+  
+  .no-rating {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-style: italic;
+  }
+  
  

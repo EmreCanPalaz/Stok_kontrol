@@ -1,0 +1,268 @@
+/* Review Modal Overlay */
+.review-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1060;
+}
+
+/* Review Modal */
+.review-modal {
+  width: 100%;
+  max-width: 700px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: modal-appear 0.3s ease-out;
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal Header */
+.review-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.review-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #212529;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #6c757d;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: #dc3545;
+}
+
+/* Product Rating */
+.product-rating {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+  font-size: 0.9rem;
+}
+
+.rating-text {
+  margin-left: 5px;
+  font-weight: normal;
+  color: #6c757d;
+}
+
+.no-rating {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: normal;
+  font-style: italic;
+}
+
+/* Tabs */
+.review-modal-tabs {
+  display: flex;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 1rem;
+  background: none;
+  border: none;
+  color: #6c757d;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+  background-color: #f8f9fa;
+  color: #0d6efd;
+}
+
+.tab-button.active {
+  color: #0d6efd;
+  border-bottom: 2px solid #0d6efd;
+}
+
+/* Modal Body */
+.review-modal-body {
+  padding: 1.5rem;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* Reviews List */
+.no-reviews {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+}
+
+.no-reviews p {
+  margin-bottom: 1rem;
+}
+
+.reviews-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.review-item {
+  position: relative;
+  padding: 1.25rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #0d6efd;
+}
+
+.review-item.pending-approval {
+  border-left-color: #ffc107;
+  background-color: #fff8e1;
+}
+
+.approval-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #ffc107;
+  color: #212529;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0 8px 0 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.review-user {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.review-date {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.review-rating {
+  margin-bottom: 0.75rem;
+}
+
+.review-comment {
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.review-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Review Form */
+.review-form-container {
+  padding: 1rem 0;
+}
+
+.login-required {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+}
+
+.login-required p {
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.rating-stars {
+  display: flex;
+  font-size: 1.5rem;
+}
+
+.star {
+  color: #ffc107;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.star.filled {
+  color: #ffc107;
+}
+
+.star.empty {
+  color: #e4e5e9;
+}
+
+.star:hover {
+  transform: scale(1.1);
+}
+
+.form-submit {
+  text-align: right;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .review-modal {
+    max-width: 95%;
+    max-height: 90vh;
+  }
+  
+  .review-modal-body {
+    max-height: 60vh;
+  }
+  
+  .review-header {
+    flex-direction: column;
+    gap: 5px;
+  }
+}

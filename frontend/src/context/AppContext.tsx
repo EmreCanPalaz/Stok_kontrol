@@ -60,6 +60,18 @@ export interface ActivityLog {
   date: Date; // İşlem tarihi
 }
 
+// Yorum ve puanlama için model
+export interface Review {
+  id: number;
+  productId: number;
+  userId: string;
+  username: string;
+  rating: number; // 1-5 arası bir değer
+  comment: string;
+  date: Date;
+  isApproved: boolean; // Moderasyon için
+}
+
 interface AppContextType {
   cartItems: CartItem[];
   cartTotal: number;
@@ -110,6 +122,15 @@ interface AppContextType {
   getActivityLogsByUser: (username: string) => ActivityLog[];
   getActivityLogsByDateRange: (startDate: Date, endDate: Date) => ActivityLog[];
   clearActivityLogs: () => void; // İsteğe bağlı: Tüm logları temizleme (admin için)
+  
+  // Yorum ve Puanlama için
+  reviews: Review[];
+  addReview: (review: Omit<Review, 'id' | 'date' | 'isApproved'>) => void;
+  deleteReview: (reviewId: number) => void;
+  approveReview: (reviewId: number) => void;
+  getReviewsByProduct: (productId: number) => Review[];
+  getReviewsByUser: (userId: string) => Review[];
+  getAverageRating: (productId: number) => number;
 }
 
 // Context oluşturma 
@@ -129,6 +150,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [financialTransactions, setFinancialTransactions] = useState<FinancialTransaction[]>([]);
   const [activeAdminPanel, setActiveAdminPanel] = useState<string | null>(null);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -596,6 +618,122 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     localStorage.removeItem('activityLogs');
   };
   
+  // Başlangıçta localStorage'dan yorumları yükle
+  useEffect(() => {
+    const savedReviews = localStorage.getItem('productReviews');
+    if (savedReviews) {
+      try {
+        const parsedReviews = JSON.parse(savedReviews);
+        // Date nesnelerini string'den Date'e çevir
+        const formattedReviews = parsedReviews.map((review: any) => ({
+          ...review,
+          date: new Date(review.date)
+        }));
+        
+        setReviews(formattedReviews);
+      } catch (e) {
+        console.error('Yorumlar yüklenirken hata oluştu:', e);
+        localStorage.removeItem('productReviews');
+      }
+    }
+  }, []); // Sadece başlangıçta çalış
+  
+  // Yorumları localStorage'a kaydet
+  useEffect(() => {
+    localStorage.setItem('productReviews', JSON.stringify(reviews));
+  }, [reviews]);
+  
+  // Yorum ekleme fonksiyonu
+  const addReview = (review: Omit<Review, 'id' | 'date' | 'isApproved'>) => {
+    const newReview: Review = {
+      ...review,
+      id: Date.now(),
+      date: new Date(),
+      isApproved: false // Varsayılan olarak onaylanmamış durumda
+    };
+    
+    setReviews(prev => [newReview, ...prev]);
+    
+    // İşlem loguna ekle
+    addActivityLog({
+      action: 'review_add',
+      description: `"${products.find(p => p.id === review.productId)?.title}" ürünü için yorum eklendi`,
+      details: {
+        ...newReview,
+        productName: products.find(p => p.id === review.productId)?.title
+      },
+      performedBy: user?.username || 'Misafir Kullanıcı'
+    });
+  };
+  
+  // Yorum silme fonksiyonu
+  const deleteReview = (reviewId: number) => {
+    const reviewToDelete = reviews.find(r => r.id === reviewId);
+    
+    if (reviewToDelete) {
+      setReviews(prev => prev.filter(r => r.id !== reviewId));
+      
+      // İşlem loguna ekle
+      addActivityLog({
+        action: 'review_delete',
+        description: `"${products.find(p => p.id === reviewToDelete.productId)?.title}" ürünü için yorum silindi`,
+        details: {
+          ...reviewToDelete,
+          productName: products.find(p => p.id === reviewToDelete.productId)?.title
+        },
+        performedBy: user?.username || 'Misafir Kullanıcı'
+      });
+    }
+  };
+  
+  // Yorum onaylama fonksiyonu
+  const approveReview = (reviewId: number) => {
+    setReviews(prev => 
+      prev.map(review => 
+        review.id === reviewId 
+          ? { ...review, isApproved: true } 
+          : review
+      )
+    );
+    
+    const approvedReview = reviews.find(r => r.id === reviewId);
+    
+    if (approvedReview) {
+      // İşlem loguna ekle
+      addActivityLog({
+        action: 'review_approve',
+        description: `"${products.find(p => p.id === approvedReview.productId)?.title}" ürünü için yorum onaylandı`,
+        details: {
+          ...approvedReview,
+          productName: products.find(p => p.id === approvedReview.productId)?.title
+        },
+        performedBy: user?.username || 'Misafir Kullanıcı'
+      });
+    }
+  };
+  
+  // Ürüne göre yorumları getirme fonksiyonu
+  const getReviewsByProduct = (productId: number) => {
+    return reviews.filter(review => review.productId === productId);
+  };
+  
+  // Kullanıcıya göre yorumları getirme fonksiyonu
+  const getReviewsByUser = (userId: string) => {
+    return reviews.filter(review => review.userId === userId);
+  };
+  
+  // Ortalama puanı hesaplama fonksiyonu
+  const getAverageRating = (productId: number) => {
+    const productReviews = reviews.filter(
+      review => review.productId === productId && review.isApproved
+    );
+    
+    if (productReviews.length === 0) return 0;
+    
+    const totalRating = productReviews.reduce((sum, review) => sum + review.rating, 0);
+    return totalRating / productReviews.length;
+  };
+  
   const value: AppContextType = {
     cartItems,
     cartTotal,
@@ -644,7 +782,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     getActivityLogsByAction,
     getActivityLogsByUser,
     getActivityLogsByDateRange,
-    clearActivityLogs
+    clearActivityLogs,
+    
+    // Yorum ve Puanlama için
+    reviews,
+    addReview,
+    deleteReview,
+    approveReview,
+    getReviewsByProduct,
+    getReviewsByUser,
+    getAverageRating
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

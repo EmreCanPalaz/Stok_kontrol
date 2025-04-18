@@ -208,6 +208,7 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount }) => {
       {/* Auth Modal */}
       {showAuthModal && <AuthForms onClose={toggleAuthModal} initialForm={initialAuthForm} />}
       
+      {/* Yönetim Paneli Modalı */}
       {showAdminModal && (
         <div className="admin-modal-overlay">
           <div className="admin-modal">
@@ -253,6 +254,16 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartItemCount }) => {
                   <div className="admin-menu-text">
                     <h4>İşlem Geçmişi</h4>
                     <p>Yapılan tüm işlemlerin kaydını tutarak geçmişe dönük inceleme yapma</p>
+                  </div>
+                </div>
+                {/* Yeni Yorum Yönetimi seçeneği */}
+                <div className="admin-menu-item" onClick={() => handleAdminPanelSelect('reviews')}>
+                  <div className="admin-menu-icon">
+                    <i className="bi bi-chat-left-text"></i>
+                  </div>
+                  <div className="admin-menu-text">
+                    <h4>Yorum Yönetimi</h4>
+                    <p>Kullanıcı yorumlarını ve puanlarını yönetme, onaylama ve silme</p>
                   </div>
                 </div>
               </div>

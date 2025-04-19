@@ -1,6 +1,6 @@
 Frontend domain adresi: https://stokkontrol.vercel.app
 
-#Emre Can Palaz Frontend#
+# Emre Can Palaz Frontend #
 
 1.Kullanıcı Girişi
 

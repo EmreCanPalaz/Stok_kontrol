@@ -31,3 +31,20 @@ Frontend domain adresi: https://stokkontrol.vercel.app
 6.Yorum Silme
 
 7.Ürün Puanlama
+
+# Kaan Ceylan Frontend # 
+
+1. Favorilere ekleme
+
+2. Ürün Link Paylaşımı
+
+3. Ürün Filtreleme
+
+4. Ürün arama
+
+5. Ürün Sıralama
+
+6. Sayfa Dilini Değiştirme
+
+7. Barkod/Qr kod desteği (Giriş yapınca yönetim bölümünden erişilebiliyor) 
+

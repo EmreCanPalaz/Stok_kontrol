@@ -15,3 +15,19 @@ Frontend domain adresi: https://stokkontrol.vercel.app
 6.Kimlik Doğrulama
 
 7.Müşteri Geri Bildirim Anketleri
+
+# Emirhan Fidan Frontend #
+
+1.Stok Takibi
+
+2.Depo Giriş-Çıkış Takibi
+
+3.Gelir Gider Takibi
+
+4.İşlem Geçmişi
+
+5.Yorum Ekleme
+
+6.Yorum Silme
+
+7.Ürün Puanlama

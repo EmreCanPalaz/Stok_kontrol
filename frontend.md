@@ -48,3 +48,5 @@ Frontend domain adresi: https://stokkontrol.vercel.app
 
 7. Barkod/Qr kod desteği (Giriş yapınca yönetim bölümünden erişilebiliyor) 
 
+
+Giriş yapabilmek için e-mail:example@gmail.com şifre:1 kullanılabilir

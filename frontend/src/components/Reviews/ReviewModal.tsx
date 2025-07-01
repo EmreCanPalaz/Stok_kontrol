@@ -1,286 +1,188 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import './ReviewModal.css';
+import { Review, ProductProps } from '../../types/product';
+import { format } from 'date-fns';
 
 interface ReviewModalProps {
-  show: boolean;
+  productId: string;
+  productTitle?: string;
   onClose: () => void;
-  productId: number;
 }
 
-const ReviewModal: React.FC<ReviewModalProps> = ({ show, onClose, productId }) => {
-  const { 
-    user, 
-    products, 
-    addReview, 
-    getReviewsByProduct, 
-    deleteReview, 
-    approveReview,
-    getAverageRating 
-  } = useAppContext();
-  
-  const [rating, setRating] = useState<number>(5);
-  const [comment, setComment] = useState<string>('');
-  const [product, setProduct] = useState<any>(null);
-  const [reviews, setReviews] = useState<any[]>([]);
+const ReviewModal: React.FC<ReviewModalProps> = ({ productId, productTitle, onClose }) => {
+  const { user, products, reviews, addReview, deleteReview, approveReview, getReviewsByProduct, getAverageRating } = useAppContext();
+
+  const [product, setProduct] = useState<ProductProps | null>(null);
+  const [productReviews, setProductReviews] = useState<Review[]>([]);
   const [averageRating, setAverageRating] = useState<number>(0);
-  const [hoveredRating, setHoveredRating] = useState<number | null>(null);
-  const [reviewTab, setReviewTab] = useState<'read' | 'write'>('read');
-  
+
+  const [newReviewRating, setNewReviewRating] = useState<number>(0);
+  const [newReviewComment, setNewReviewComment] = useState('');
+  const [reviewError, setReviewError] = useState('');
+
   useEffect(() => {
     if (productId) {
-      const productData = products.find(p => p.id === productId);
+      const productData = products.find(p => p._id === productId);
       setProduct(productData || null);
-      
-      const productReviews = getReviewsByProduct(productId);
-      setReviews(productReviews);
-      
+
+      const reviewsForProduct = getReviewsByProduct(productId);
+      setProductReviews(reviewsForProduct);
+
       const avgRating = getAverageRating(productId);
       setAverageRating(avgRating);
     }
   }, [productId, products, getReviewsByProduct, getAverageRating]);
-  
-  // Modal gösterildiğinde veya gizlendiğinde çalışır
-  useEffect(() => {
-    if (show) {
-      document.body.classList.add('modal-open');
-    } else {
-      document.body.classList.remove('modal-open');
-      // Modal kapandığında formu sıfırla
-      setRating(5);
-      setComment('');
-      setReviewTab('read');
-    }
-    return () => {
-      document.body.classList.remove('modal-open');
-    };
-  }, [show]);
-  
-  // Yorumlar güncellendiğinde yeniden listele
-  useEffect(() => {
-    if (productId) {
-      const productReviews = getReviewsByProduct(productId);
-      setReviews(productReviews);
-      
-      const avgRating = getAverageRating(productId);
-      setAverageRating(avgRating);
-    }
-  }, [productId, getReviewsByProduct, getAverageRating]);
-  
-  const handleSubmitReview = (e: React.FormEvent) => {
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setReviewError('');
+
     if (!user) {
-      alert('Yorum yapabilmek için giriş yapmalısınız.');
+        alert('Yorum yapmak için giriş yapmalısınız.');
+        return;
+    }
+     if (!productId) {
+         setReviewError('Ürün bilgisi eksik.');
+         return;
+     }
+    if (newReviewRating <= 0 || newReviewRating > 5) {
+      setReviewError('Lütfen 1 ile 5 arasında bir puan seçin.');
       return;
     }
-    
-    if (!comment.trim()) {
-      alert('Lütfen bir yorum yazınız.');
+    if (newReviewComment.trim() === '') {
+      setReviewError('Lütfen yorumunuzu yazın.');
       return;
     }
-    
-    addReview({
-      productId,
-      userId: user.email,
-      username: user.username,
-      rating,
-      comment: comment.trim()
-    });
-    
-    // Formu sıfırla ve okuma sekmesine geç
-    setRating(5);
-    setComment('');
-    setReviewTab('read');
+
+    const reviewData = {
+      productId: productId,
+      rating: newReviewRating,
+      comment: newReviewComment,
+    };
+
+    try {
+        await addReview(reviewData);
+        setNewReviewRating(0);
+        setNewReviewComment('');
+        alert('Yorumunuz gönderildi ve onay bekliyor!');
+
+    } catch (error) {
+        console.error('Yorum gönderme hatası:', error);
+        setReviewError('Yorum gönderilirken bir hata oluştu.');
+    }
   };
-  
-  const handleDeleteReview = (reviewId: number) => {
+
+  const handleDeleteReview = async (reviewId: string) => {
     if (window.confirm('Bu yorumu silmek istediğinize emin misiniz?')) {
-      deleteReview(reviewId);
+      try {
+        await deleteReview(reviewId);
+        alert('Yorum başarıyla silindi!');
+      } catch (error) {
+        console.error('Yorum silme hatası:', error);
+        alert('Yorum silinirken bir hata oluştu.');
+      }
     }
   };
-  
-  const handleApproveReview = (reviewId: number) => {
-    approveReview(reviewId);
+
+  const handleApproveReview = async (reviewId: string) => {
+     try {
+        await approveReview(reviewId);
+        alert('Yorum başarıyla onaylandı!');
+     } catch (error) {
+        console.error('Yorum onaylama hatası:', error);
+        alert('Yorum onaylanırken bir hata oluştu.');
+     }
   };
-  
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString('tr-TR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+
+  const isAdmin = (): boolean => {
+      return user !== null && user.role === 'admin';
   };
-  
-  // Kullanıcının admin olup olmadığını kontrol eden yardımcı fonksiyon
-  const isAdmin = () => {
-    return user?.isAdmin === true;
+
+  const canDeleteReview = (review: Review): boolean => {
+      return user !== null && review.userId === user._id;
   };
-  
-  // Kullanıcının kendi yorumunu silme yetkisi var mı kontrol eden yardımcı fonksiyon
-  const canDeleteReview = (review: any) => {
-    return isAdmin() || (user && review.userId === user.email);
-  };
-  
-  // Stars gösterimi için yardımcı fonksiyon
-  const renderStars = (rating: number, interactive = false) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <span 
-          key={i}
-          className={`star ${i <= (hoveredRating || rating) ? 'filled' : 'empty'}`}
-          onClick={() => interactive && setRating(i)}
-          onMouseEnter={() => interactive && setHoveredRating(i)}
-          onMouseLeave={() => interactive && setHoveredRating(null)}
-        >
-          {i <= (hoveredRating || rating) ? '★' : '☆'}
-        </span>
-      );
-    }
-    return stars;
-  };
-  
-  if (!show) return null;
-  
+
+  if (!product) return null;
+
   return (
-    <div className="review-modal-overlay" onClick={onClose}>
-      <div className="review-modal" onClick={e => e.stopPropagation()}>
-        <div className="review-modal-header">
-          <h3>
-            {product?.title} {' '}
-            <span className="product-rating">
-              {averageRating > 0 ? (
-                <>
-                  {renderStars(Math.round(averageRating))}
-                  <span className="rating-text">({averageRating.toFixed(1)})</span>
-                </>
-              ) : (
-                <span className="no-rating">Henüz değerlendirilmemiş</span>
-              )}
-            </span>
-          </h3>
-          <button className="close-button" onClick={onClose}>
-            <i className="bi bi-x-lg"></i>
-          </button>
+    <div className="review-modal-overlay">
+      <div className="review-modal-content">
+        <div className="modal-header">
+          <h5>"{productTitle || product.title}" Ürünü Yorumları</h5>
+          <button className="close-button" onClick={onClose}>×</button>
         </div>
-        
-        <div className="review-modal-tabs">
-          <button 
-            className={`tab-button ${reviewTab === 'read' ? 'active' : ''}`}
-            onClick={() => setReviewTab('read')}
-          >
-            Yorumları Oku
-          </button>
-          <button 
-            className={`tab-button ${reviewTab === 'write' ? 'active' : ''}`}
-            onClick={() => setReviewTab('write')}
-          >
-            Yorum Yap
-          </button>
-        </div>
-        
-        <div className="review-modal-body">
-          {reviewTab === 'read' ? (
-            <div className="reviews-list">
-              {reviews.length === 0 ? (
-                <div className="no-reviews">
-                  <p>Bu ürün için henüz yorum yapılmamış.</p>
-                  <button 
-                    className="btn btn-primary"
-                    onClick={() => setReviewTab('write')}
-                  >
-                    İlk Yorumu Sen Yap
-                  </button>
-                </div>
-              ) : (
-                <div className="reviews-container">
-                  {reviews.map(review => (
-                    <div 
-                      key={review.id} 
-                      className={`review-item ${!review.isApproved ? 'pending-approval' : ''}`}
-                    >
-                      {!review.isApproved && (
-                        <div className="approval-badge">
-                          <i className="bi bi-hourglass"></i> Onay Bekliyor
-                        </div>
-                      )}
-                      <div className="review-header">
-                        <div className="review-user">
-                          <i className="bi bi-person-circle"></i> {review.username}
-                        </div>
-                        <div className="review-date">
-                          {formatDate(review.date)}
-                        </div>
-                      </div>
-                      <div className="review-rating">
-                        {renderStars(review.rating)}
-                      </div>
-                      <div className="review-comment">
-                        {review.comment}
-                      </div>
-                      <div className="review-actions">
-                        {isAdmin() && !review.isApproved && (
-                          <button 
-                            className="btn btn-sm btn-success me-2" 
-                            onClick={() => handleApproveReview(review.id)}
-                          >
-                            <i className="bi bi-check"></i> Onayla
-                          </button>
-                        )}
-                        {canDeleteReview(review) && (
-                          <button 
-                            className="btn btn-sm btn-danger" 
-                            onClick={() => handleDeleteReview(review.id)}
-                          >
-                            <i className="bi bi-trash"></i> Sil
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+        <div className="modal-body">
+          <div className="average-rating-section mb-3">
+             {averageRating > 0 ? (
+                 <p>Ortalama Puan: {averageRating.toFixed(1)} / 5</p>
+             ) : (
+                 <p>Bu ürün için henüz yorum yapılmamış.</p>
+             )}
+          </div>
+
+          {user ? (
+               <div className="new-review-form mb-4">
+                   <h6>Yeni Yorum Yap</h6>
+                   <form onSubmit={handleSubmitReview}>
+                       <div className="form-group">
+                           <label>Puanınız (1-5):</label>
+                           <input
+                               type="number"
+                               value={newReviewRating}
+                               onChange={e => setNewReviewRating(parseInt(e.target.value))}
+                               min="1"
+                               max="5"
+                               required
+                               className="form-control"
+                           />
+                       </div>
+                       <div className="form-group">
+                           <label>Yorumunuz:</label>
+                           <textarea
+                               value={newReviewComment}
+                               onChange={e => setNewReviewComment(e.target.value)}
+                               required
+                               className="form-control"
+                           ></textarea>
+                       </div>
+                       {reviewError && <div className="text-danger">{reviewError}</div>}
+                       <button type="submit" className="btn btn-primary mt-2">Yorumu Gönder</button>
+                   </form>
+               </div>
+           ) : (
+             <div className="alert alert-info mb-4">Yorum yapmak için lütfen giriş yapın.</div>
+           )}
+
+          <h6>Tüm Yorumlar</h6>
+          {productReviews.length === 0 ? (
+              <p>Henüz bu ürün için yorum bulunmamaktadır.</p>
           ) : (
-            <div className="review-form-container">
-              {!user ? (
-                <div className="login-required">
-                  <p>Yorum yapabilmek için giriş yapmalısınız.</p>
-                  <button className="btn btn-primary">Giriş Yap</button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmitReview} className="review-form">
-                  <div className="form-group mb-3">
-                    <label>Puanınız:</label>
-                    <div className="rating-stars">
-                      {renderStars(rating, true)}
-                    </div>
-                  </div>
-                  <div className="form-group mb-3">
-                    <label htmlFor="comment">Yorumunuz:</label>
-                    <textarea 
-                      id="comment"
-                      className="form-control" 
-                      value={comment}
-                      onChange={e => setComment(e.target.value)}
-                      rows={5}
-                      required
-                    ></textarea>
-                  </div>
-                  <div className="form-submit">
-                    <button type="submit" className="btn btn-primary">
-                      Yorumu Gönder
-                    </button>
-                  </div>
-                  <div className="form-note mt-3">
-                    <small className="text-muted">
-                      * Yorumunuz sistem yöneticileri tarafından onaylandıktan sonra yayınlanacaktır.
-                    </small>
-                  </div>
-                </form>
-              )}
-            </div>
+              <ul className="review-list">
+                {productReviews.map(review => (
+                  <li key={review._id} className={`review-item ${review.isApproved ? '' : 'review-pending'}`}>
+                     <div className="review-header">
+                         <strong>{review.username}</strong>
+                         <span>Puan: {review.rating}/5</span>
+                          <span className="review-date">{format(new Date(review.date), 'dd.MM.yyyy HH:mm')}</span>
+                     </div>
+                     <p>{review.comment}</p>
+                      <div className="review-actions">
+                          {!review.isApproved && (
+                              <span className="badge bg-warning me-2">Onay Bekliyor</span>
+                          )}
+                           {isAdmin() || canDeleteReview(review) && (
+                               <>
+                                   {!review.isApproved && isAdmin() && (
+                                       <button onClick={() => handleApproveReview(review._id)} className="btn btn-success btn-sm me-2">Onayla</button>
+                                   )}
+                                    <button onClick={() => handleDeleteReview(review._id)} className="btn btn-danger btn-sm">Sil</button>
+                               </>
+                           )}
+                      </div>
+                  </li>
+                ))}
+              </ul>
           )}
         </div>
       </div>

@@ -1,232 +1,153 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import './InventoryTracker.css';
+import { InventoryTransaction, ProductProps } from '../../types/product';
+import { format } from 'date-fns';
 
 const InventoryTracker: React.FC = () => {
-  const { 
-    inventoryTransactions, 
-    addInventoryTransaction, 
-    products 
-  } = useAppContext();
-  
-  const [selectedProduct, setSelectedProduct] = useState<number>(0);
-  const [quantity, setQuantity] = useState<number>(1);
+  const { products, inventoryTransactions, addInventoryTransaction, getInventoryTransactionsByProduct, getInventoryTransactionsByType } = useAppContext();
+
+  const [selectedProduct, setSelectedProduct] = useState<string | ''>('');
+  const [quantity, setQuantity] = useState<number | ''>('');
   const [transactionType, setTransactionType] = useState<'in' | 'out'>('in');
-  const [reason, setReason] = useState<string>('');
-  const [filteredTransactions, setFilteredTransactions] = useState(inventoryTransactions);
-  const [filterType, setFilterType] = useState<'all' | 'in' | 'out'>('all');
+  const [reason, setReason] = useState('');
 
-  useEffect(() => {
-    // Tüm işlemleri veya filtrelenmiş işlemleri göster
-    if (filterType === 'all') {
-      setFilteredTransactions([...inventoryTransactions].sort((a, b) => 
-        new Date(b.date).getTime() - new Date(a.date).getTime()
-      ));
-    } else {
-      setFilteredTransactions(
-        inventoryTransactions.filter(t => t.type === filterType)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      );
-    }
-  }, [inventoryTransactions, filterType]);
+  const transactionsForSelectedProduct = selectedProduct ? getInventoryTransactionsByProduct(selectedProduct) : inventoryTransactions;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!selectedProduct || !quantity || !reason) {
-      alert('Lütfen tüm alanları doldurun');
+
+    if (!selectedProduct) {
+      alert('Lütfen bir ürün seçin.');
       return;
     }
-    
-    // Seçili ürünün adını bul - any tipi kullanarak tip hatasını önlüyoruz
-    const selectedProductObj = products.find(p => p.id === selectedProduct);
-    if (!selectedProductObj) {
-      alert('Geçerli bir ürün seçin');
+    if (quantity === '' || quantity <= 0) {
+      alert('Lütfen geçerli bir miktar girin.');
       return;
     }
-    
-    // İşlemi ekle
-    addInventoryTransaction({
+    if (!reason) {
+        alert('Lütfen işlem sebebini girin.');
+        return;
+    }
+
+    const newTransactionData: Omit<InventoryTransaction, '_id' | 'date' | 'createdBy' | 'productName'> = {
       productId: selectedProduct,
-      productName: selectedProductObj.title,
-      quantity,
+      quantity: parseInt(quantity.toString()),
       type: transactionType,
       reason,
-      createdBy: 'Mevcut Kullanıcı' // Gerçek uygulamada kullanıcı adı kullanılabilir
-    });
-    
-    // Formu sıfırla
-    setQuantity(1);
-    setReason('');
-  };
-  
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString('tr-TR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    };
+
+    try {
+        await addInventoryTransaction(newTransactionData);
+        setSelectedProduct('');
+        setQuantity('');
+        setReason('');
+        alert('Depo işlemi başarıyla eklendi!');
+    } catch (error) {
+        console.error('Depo işlemi eklenirken hata:', error);
+        alert('Depo işlemi eklenirken bir hata oluştu.');
+    }
   };
 
   return (
-    <div className="inventory-tracker-container">
-      <h2 className="mb-4">Depo Giriş-Çıkış Takibi</h2>
-      
-      <div className="row">
-        <div className="col-md-4">
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">Yeni İşlem Ekle</h5>
-            </div>
-            <div className="card-body">
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="product" className="form-label">Ürün</label>
-                  <select 
-                    id="product" 
-                    className="form-select" 
-                    value={selectedProduct} 
-                    onChange={(e) => setSelectedProduct(Number(e.target.value))}
-                    required
-                  >
-                    <option value="">Ürün Seçin</option>
-                    {products.map(product => (
-                      <option key={product.id} value={product.id}>
-                        {product.title} (Mevcut Stok: {product.stock})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="mb-3">
-                  <label htmlFor="transactionType" className="form-label">İşlem Türü</label>
-                  <div className="d-flex">
-                    <div className="form-check me-3">
-                      <input 
-                        type="radio" 
-                        className="form-check-input" 
-                        id="typeIn" 
-                        name="transactionType" 
-                        value="in" 
-                        checked={transactionType === 'in'} 
-                        onChange={() => setTransactionType('in')} 
-                        required
-                      />
-                      <label className="form-check-label" htmlFor="typeIn">Giriş</label>
-                    </div>
-                    <div className="form-check">
-                      <input 
-                        type="radio" 
-                        className="form-check-input" 
-                        id="typeOut" 
-                        name="transactionType" 
-                        value="out" 
-                        checked={transactionType === 'out'} 
-                        onChange={() => setTransactionType('out')} 
-                        required
-                      />
-                      <label className="form-check-label" htmlFor="typeOut">Çıkış</label>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mb-3">
-                  <label htmlFor="quantity" className="form-label">Miktar</label>
-                  <input 
-                    type="number" 
-                    className="form-control" 
-                    id="quantity" 
-                    value={quantity} 
-                    onChange={(e) => setQuantity(parseInt(e.target.value) || 0)} 
-                    min="1" 
-                    required
-                  />
-                </div>
-                
-                <div className="mb-3">
-                  <label htmlFor="reason" className="form-label">Açıklama</label>
-                  <textarea 
-                    className="form-control" 
-                    id="reason" 
-                    value={reason} 
-                    onChange={(e) => setReason(e.target.value)} 
-                    required
-                  ></textarea>
-                </div>
-                
-                <button type="submit" className="btn btn-primary w-100">İşlemi Kaydet</button>
-              </form>
-            </div>
+    <div className="inventory-tracker">
+      <h2>Depo Giriş-Çıkış Takibi</h2>
+
+      <div className="add-transaction-form">
+        <h3>Yeni İşlem Ekle</h3>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Ürün:</label>
+            <select value={selectedProduct} onChange={e => setSelectedProduct(e.target.value)} className="form-control" required>
+              <option value="">Ürün Seçin</option>
+              {products.map(product => (
+                <option key={product._id} value={product._id}>
+                  {product.title} (Mevcut Stok: {product.stock})
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
+          <div className="form-group">
+            <label>Tip:</label>
+            <select value={transactionType} onChange={e => setTransactionType(e.target.value as 'in' | 'out')} className="form-control">
+              <option value="in">Giriş</option>
+              <option value="out">Çıkış</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Miktar:</label>
+            <input type="number" value={quantity} onChange={e => setQuantity(parseInt(e.target.value))} className="form-control" required min="1"/>
+          </div>
+           <div className="form-group">
+            <label>Sebep:</label>
+            <input type="text" value={reason} onChange={e => setReason(e.target.value)} className="form-control" required/>
+          </div>
+          <button type="submit" className="btn btn-primary">Ekle</button>
+        </form>
+      </div>
+
+      <div className="transaction-list mt-4">
+        <h3>İşlem Geçmişi {selectedProduct ? `(${products.find(p => p._id === selectedProduct)?.title} İçin)` : ''}</h3>
         
-        <div className="col-md-8">
-          <div className="card">
-            <div className="card-header">
-              <div className="d-flex justify-content-between align-items-center">
-                <h5 className="card-title mb-0">Depo İşlemleri</h5>
-                <div className="btn-group">
-                  <button 
-                    className={`btn btn-sm ${filterType === 'all' ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => setFilterType('all')}
-                  >
-                    Tümü
-                  </button>
-                  <button 
-                    className={`btn btn-sm ${filterType === 'in' ? 'btn-success' : 'btn-outline-success'}`}
-                    onClick={() => setFilterType('in')}
-                  >
-                    Giriş
-                  </button>
-                  <button 
-                    className={`btn btn-sm ${filterType === 'out' ? 'btn-danger' : 'btn-outline-danger'}`}
-                    onClick={() => setFilterType('out')}
-                  >
-                    Çıkış
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              {filteredTransactions.length === 0 ? (
-                <div className="alert alert-info">Henüz işlem bulunmamaktadır.</div>
-              ) : (
-                <div className="table-responsive">
-                  <table className="table table-striped table-hover">
-                    <thead>
-                      <tr>
-                        <th>Tarih</th>
-                        <th>Ürün</th>
-                        <th>İşlem</th>
-                        <th>Miktar</th>
-                        <th>Açıklama</th>
-                        <th>İşlemi Yapan</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTransactions.map(transaction => (
-                        <tr key={transaction.id}>
-                          <td>{formatDate(transaction.date)}</td>
-                          <td>{transaction.productName}</td>
-                          <td>
-                            <span className={`badge ${transaction.type === 'in' ? 'bg-success' : 'bg-danger'}`}>
-                              {transaction.type === 'in' ? 'Giriş' : 'Çıkış'}
-                            </span>
-                          </td>
-                          <td>{transaction.quantity}</td>
-                          <td>{transaction.reason}</td>
-                          <td>{transaction.createdBy}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+        <div className="form-group mb-3">
+            <label>Ürüne Göre Filtrele:</label>
+            <select value={selectedProduct} onChange={e => setSelectedProduct(e.target.value)} className="form-control">
+              <option value="">Tüm Ürünler</option>
+              {products.map(product => (
+                <option key={product._id} value={product._id}>
+                  {product.title}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
+
+        {transactionsForSelectedProduct.length === 0 ? (
+            <p>Gösterilecek işlem bulunamadı.</p>
+        ) : (
+             <table className="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                         <th>Ürün</th>
+                        <th>Tip</th>
+                        <th>Miktar</th>
+                        <th>Sebep</th>
+                         <th>Yapan Kullanıcı</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {transactionsForSelectedProduct.map(transaction => (
+                        <tr key={transaction._id}>
+                            <td>
+                                {transaction.date ? (
+                                    <>
+                                        {new Date(transaction.date).toLocaleDateString()}{' '}
+                                        {transaction.date && format(new Date(transaction.date), 'HH:mm')}
+                                    </>
+                                ) : (
+                                    'Tarih bilgisi yok'
+                                )}
+                            </td>
+                            <td>{transaction.productName || 'İsimsiz ürün'}</td>
+                            <td className={transaction.type === 'in' ? 'text-success' : 'text-danger'}>
+                                {transaction.type === 'in' ? 'Giriş' : 'Çıkış'}
+                            </td>
+                            <td>{transaction.quantity}</td>
+                            <td>{transaction.reason || '-'}</td>
+                            <td>
+                                {typeof transaction.createdBy === 'object' 
+                                    ? (transaction.createdBy && transaction.createdBy.firstName 
+                                        ? `${transaction.createdBy.firstName} ${transaction.createdBy.lastName || ''}` 
+                                        : 'Bilinmiyor')
+                                    : (transaction.createdBy || 'Bilinmiyor')
+                                }
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        )}
+
       </div>
     </div>
   );

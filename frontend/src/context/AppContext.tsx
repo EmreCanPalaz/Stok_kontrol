@@ -1,118 +1,58 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useEffect, useCallback, useMemo } from 'react';
 
-// Geçici tip tanımlamaları
-export interface UserData {
-  username: string;
-  email: string;
-  isLoggedIn: boolean;
-  isAdmin?: boolean;
-  hasStockControlAccess?: boolean;
-}
+import api from '../services/api';
 
 
-export interface ProductProps {
-  id: number;
-  title: string;
-  price: number;
-  image: string;
-  description?: string;
-  category?: string;
-  stock: number;
-}
+// Tüm tipleri types/product.ts'den import edin
+import {
+ 
+  ProductProps,
+  CartItem,
+  InventoryTransaction,
+  FinancialTransaction,
+ 
+  Review,
+  ApiResponse,
+  ProductsResponse
+} from '../types/product';
 
-
-export interface CartItem extends ProductProps {
-  quantity: number;
-}
-
-
-// InventoryTransaction arayüzü için ekleme
-export interface InventoryTransaction {
-  id: number;
-  productId: number;
-  productName: string;
-  quantity: number;
-  type: 'in' | 'out'; // 'in' giriş, 'out' çıkış
-  reason: string;
-  date: Date;
-  createdBy: string;
-}
-
-// FinancialTransaction arayüzü için ekleme
-export interface FinancialTransaction {
-  id: number;
-  description: string;
-  amount: number; // Pozitif değerler gelir, negatif değerler gider
-  type: 'income' | 'expense';
-  category: string;
-  date: Date;
-  createdBy: string;
-  relatedProductId?: number; // İlişkili ürün, eğer varsa
-}
-
-// İşlem Geçmişi için model
-export interface ActivityLog {
-  id: number;
-  action: string; // İşlemin türü (örn: "stock_update", "inventory_in", "finance_income")
-  description: string; // İşlemin açıklaması
-  details: any; // İşlemin detayları (JSON olarak saklanabilir)
-  performedBy: string; // İşlemi yapan kullanıcı
-  date: Date; // İşlem tarihi
-}
-
-// Yorum ve puanlama için model
-export interface Review {
-  id: number;
-  productId: number;
-  userId: string;
-  username: string;
-  rating: number; // 1-5 arası bir değer
-  comment: string;
-  date: Date;
-  isApproved: boolean; // Moderasyon için
-}
-
+// Sadece AppContextType interface'ini tutun
 interface AppContextType {
   cartItems: CartItem[];
   cartTotal: number;
   addToCart: (product: ProductProps) => void;
-  removeFromCart: (productId: number) => void;
-  updateItemQuantity: (productId: number, newQuantity: number) => void;
+  removeFromCart: (productId: string) => void;
+  updateItemQuantity: (productId: string, newQuantity: number) => void;
   clearCart: () => void;
   translate: (key: string) => string;
   translateCustom: (turkishText: string, englishText: string) => string;
-  user: UserData | null;
-  login: (email: string, password: string) => boolean;
-  register: (username: string, email: string, password: string) => boolean;
-  logout: () => void;
-  updateUser: (currentPassword: string, newUsername?: string, newPassword?: string) => boolean;
-  deleteAccount: (password: string) => Promise<boolean>;
-  resetPassword: (email: string) => boolean;
-  submitFeedback: (rating: number, comment: string) => boolean;
-  isLoading: boolean;
+  
+  
 
   // Favorites functionality
   favoriteItems: ProductProps[];
   addToFavorites: (product: ProductProps) => void;
-  removeFromFavorites: (productId: number) => void;
-  isFavorite: (productId: number) => boolean;
+  removeFromFavorites: (productId: string) => void;
+  isFavorite: (productId: string) => boolean;
 
   // Stok takibi için fonksiyonlar
   products: ProductProps[];
-  getStockStatus: (productId: number) => number;
-  checkLowStockItems: () => ProductProps[];
-  updateStock: (productId: number, newStock: number) => void;
-  addProduct: (product: Omit<ProductProps, 'id'>) => ProductProps;
+  getStockStatus: (productId: string) => number;
+  checkLowStockItems: (threshold?: number) => ProductProps[];
+  updateStock: (productId: string, newStock: number) => Promise<void>;
+  addProduct: (productData: FormData) => Promise<ProductProps>;
+  updateProduct: (productId: string, productData: ProductProps) => Promise<void>;
+  deleteProduct: (productId: string) => Promise<void>;
 
-  // Depo Giriş-Çıkış işlemleri için
+  // Depo Giriş-Çıkış için
   inventoryTransactions: InventoryTransaction[];
-  addInventoryTransaction: (transaction: Omit<InventoryTransaction, 'id' | 'date'>) => void;
-  getInventoryTransactionsByProduct: (productId: number) => InventoryTransaction[];
+  addInventoryTransaction: (transactionData: Omit<InventoryTransaction, '_id' | 'date' | 'createdBy' | 'productName'>) => Promise<void>;
+  getInventoryTransactionsByProduct: (productId: string) => InventoryTransaction[];
   getInventoryTransactionsByType: (type: 'in' | 'out') => InventoryTransaction[];
 
-  // Gelir Gider işlemleri için
+  // Gelir Gider için
   financialTransactions: FinancialTransaction[];
-  addFinancialTransaction: (transaction: Omit<FinancialTransaction, 'id' | 'date'>) => void;
+  addFinancialTransaction: (transactionData: Omit<FinancialTransaction, '_id' | 'date' | 'createdBy'>) => Promise<void>;
   getFinancialSummary: () => { totalIncome: number; totalExpense: number; balance: number };
   getFinancialTransactionsByCategory: (category: string) => FinancialTransaction[];
   getFinancialTransactionsByType: (type: 'income' | 'expense') => FinancialTransaction[];
@@ -124,35 +64,37 @@ interface AppContextType {
 
   // İşlem Geçmişi için
   activityLogs: ActivityLog[];
-  addActivityLog: (log: Omit<ActivityLog, 'id' | 'date'>) => void;
   getActivityLogsByAction: (action: string) => ActivityLog[];
   getActivityLogsByUser: (username: string) => ActivityLog[];
   getActivityLogsByDateRange: (startDate: Date, endDate: Date) => ActivityLog[];
-  clearActivityLogs: () => void; // İsteğe bağlı: Tüm logları temizleme (admin için)
+  clearActivityLogs: () => void;
 
   // Yorum ve Puanlama için
   reviews: Review[];
-  addReview: (review: Omit<Review, 'id' | 'date' | 'isApproved'>) => void;
-  deleteReview: (reviewId: number) => void;
-  approveReview: (reviewId: number) => void;
-  getReviewsByProduct: (productId: number) => Review[];
+  addReview: (reviewData: Omit<Review, '_id' | 'date' | 'isApproved' | 'userId' | 'username'>) => Promise<void>;
+  deleteReview: (reviewId: string) => Promise<void>;
+  approveReview: (reviewId: string) => Promise<void>;
+  getReviewsByProduct: (productId: string) => Review[];
   getReviewsByUser: (userId: string) => Review[];
-  getAverageRating: (productId: number) => number;
+  getAverageRating: (productId: string) => number;
 
   // Dil ayarları için
   language: 'tr' | 'en';
   setLanguage: (lang: 'tr' | 'en') => void;
+
+  setProducts: (products: ProductProps[]) => void;
 }
 
-// Context oluşturma 
+// AppContext'i oluşturun
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // Context Provider bileşeni
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
+  const { user, login: authLogin, logout: authLogout } = useAuth();
+  
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartTotal, setCartTotal] = useState(0);
-  const [user, setUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState<ProductProps[]>([]);
 
@@ -162,694 +104,188 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Yeni state değişkenleri
   const [inventoryTransactions, setInventoryTransactions] = useState<InventoryTransaction[]>([]);
   const [financialTransactions, setFinancialTransactions] = useState<FinancialTransaction[]>([]);
-  const [activeAdminPanel, setActiveAdminPanel] = useState<string | null>(null);
+ 
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
 
   // Dil ayarı için state
-  const [language, setLanguage] = useState<'tr' | 'en'>('tr');
+  const savedLanguage = localStorage.getItem('language') as 'tr' | 'en' | null;
+  const [language, setLanguage] = useState<'tr' | 'en'>(savedLanguage || 'tr');
 
+  // İşlem Logu ekleme fonksiyonu (Diğer fonksiyonlar tarafından çağrılacak)
+  
+    
+
+  // Ürünleri yüklemek için useEffect
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
+    const fetchProducts = async () => {
       try {
-        const parsedCart = JSON.parse(savedCart);
-        // TODO: Belki burada veri yapısı doğrulaması eklenebilir
-        setCartItems(parsedCart);
-      } catch (e) {
-        console.error('Sepet verisi ayrıştırılamadı:', e);
-        localStorage.removeItem('cart'); // Hatalı veriyi temizle
-      }
-    }
-
-    // Load favorites from localStorage
-    const savedFavorites = localStorage.getItem('favorites');
-    if (savedFavorites) {
-      try {
-        const parsedFavorites = JSON.parse(savedFavorites);
-        setFavoriteItems(parsedFavorites);
-      } catch (e) {
-        console.error('Favoriler verisi ayrıştırılamadı:', e);
-        localStorage.removeItem('favorites');
-      }
-    }
-  }, []); // Sadece başlangıçta çalışır
-
-
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cartItems));
-
-    const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    setCartTotal(total);
-  }, [cartItems]);
-
-  // Save favorites to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favoriteItems));
-  }, [favoriteItems]);
-
-  // ProductList.tsx'ten örnek ürünleri context'e yükleyelim
-  useEffect(() => {
-    // Örnek ürünler
-    const sampleProducts: ProductProps[] = [
-      {
-        id: 1,
-        title: "Fjallraven - Foldsack No. 1 Backpack",
-        price: 109.95,
-        description: "Your perfect pack for everyday use and walks in the forest. Stash your laptop (up to 15 inches) in the padded sleeve, your everyday",
-        category: "men's clothing",
-        image: "https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg",
-        stock: 25
-      },
-      {
-        id: 2,
-        title: "Mens Casual Premium Slim Fit T-Shirts",
-        price: 22.3,
-        description: "Slim-fitting style, contrast raglan long sleeve, three-button henley placket, light weight & soft fabric for breathable and comfortable wearing.",
-        category: "men's clothing",
-        image: "https://fakestoreapi.com/img/71-3HjGNDUL._AC_SY879._SX._UX._SY._UY_.jpg",
-        stock: 8
-      },
-      {
-        id: 3,
-        title: "Women's 3-in-1 Snowboard Jacket",
-        price: 56.99,
-        description: "Note:The Jackets is US standard size, Please choose size as your usual wear. Material: 100% Polyester; Detachable Liner Fabric: Warm Fleece.",
-        category: "women's clothing",
-        image: "https://fakestoreapi.com/img/51Y5NI-I5jL._AC_UX679_.jpg",
-        stock: 15
-      },
-      {
-        id: 4,
-        title: "WD 2TB Elements Portable External Hard Drive",
-        price: 64,
-        description: "USB 3.0 and USB 2.0 Compatibility Fast data transfers Improve PC Performance High Capacity; Compatibility Formatted NTFS for Windows 10",
-        category: "electronics",
-        image: "https://fakestoreapi.com/img/61IBBVJvSDL._AC_SY879_.jpg",
-        stock: 3
-      },
-      {
-        id: 5,
-        title: "Samsung 49-Inch CHG90 144Hz Curved Gaming Monitor",
-        price: 999.99,
-        description: "49 INCH SUPER ULTRAWIDE 32:9 CURVED GAMING MONITOR with dual 27 inch screen side by side QUANTUM DOT (QLED) TECHNOLOGY",
-        category: "electronics",
-        image: "https://fakestoreapi.com/img/81Zt42ioCgL._AC_SX679_.jpg",
-        stock: 10
-      },
-      {
-        id: 6,
-        title: "Solid Gold Petite Micropave Diamond Bracelet",
-        price: 168,
-        description: "Satisfaction Guaranteed. Return or exchange any order within 30 days. Designed and sold by Hafeez Center in the United States.",
-        category: "jewelery",
-        image: "https://fakestoreapi.com/img/71YAIFU48IL._AC_UL640_QL65_ML3_.jpg",
-        stock: 0
-      }
-    ];
-
-    setProducts(sampleProducts);
-  }, []);
-
-
-  const addToCart = (product: ProductProps) => {
-    // Stok kontrolü yap
-    const currentProduct = products.find(p => p.id === product.id);
-
-    if (!currentProduct || currentProduct.stock <= 0) {
-      alert('Bu ürün stokta bulunmamaktadır!');
-      return;
-    }
-
-    setCartItems(prevItems => {
-      const existingItemIndex = prevItems.findIndex(item => item.id === product.id);
-
-      if (existingItemIndex >= 0) {
-        // Mevcut miktar + 1, stok miktarını aşıyorsa uyarı ver
-        const newQuantity = prevItems[existingItemIndex].quantity + 1;
-
-        if (newQuantity > currentProduct.stock) {
-          alert(`Üzgünüz, bu üründen stokta sadece ${currentProduct.stock} adet kalmıştır.`);
-          return prevItems;
+        setIsLoading(true);
+        const response = await api.get<ApiResponse<ProductsResponse>>('/products');
+        console.log('API yanıtı:', response.data);
+        
+        // Backend'den gelen veri yapısını kontrol edelim
+        if (response.data && response.data.success) {
+          // Backend'den gelen veri yapısı: { success: true, data: { products: [...], pagination: {...} } }
+          const productsData = response.data.data?.products || [];
+          console.log('Yüklenen ürünler:', productsData);
+          setProducts(productsData);
+        } else {
+          console.warn('Ürünler yüklenemedi:', response.data);
+          setProducts([]);
         }
-
-        const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex].quantity += 1;
-        return updatedItems;
-      } else {
-        return [...prevItems, { ...product, quantity: 1 }];
+      } catch (error) {
+        console.error('Ürünleri yükleme hatası:', error);
+        setProducts([]);
+      } finally {
+        setIsLoading(false);
       }
-    });
-
-    // Ürün sepete eklendiğinde stok miktarını düşürme (gerçek hayatta bu işlem
-    // genellikle satın alma sırasında yapılır, ama örnek olarak ekledik)
-    updateStock(product.id, currentProduct.stock - 1);
-  };
-
-
-  const removeFromCart = (productId: number) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
-  };
-
-
-  const updateItemQuantity = (productId: number, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-    setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.id === productId
-          ? { ...item, quantity: newQuantity }
-          : item
-      )
-    );
-  };
-
-
-  const clearCart = () => {
-    setCartItems([]);
-    localStorage.removeItem('cart');
-  };
-
-  // Dil değiştirme fonksiyonu
-  const handleSetLanguage = (lang: 'tr' | 'en') => {
-    setLanguage(lang);
-    localStorage.setItem('language', lang);
-
-    // Dil değişikliğini aktivite loguna ekle
-    addActivityLog({
-      action: 'language_change',
-      description: `Dil değiştirildi: ${lang === 'tr' ? 'Türkçe' : 'İngilizce'}`,
-      details: { previousLanguage: language, newLanguage: lang },
-      performedBy: user?.username || 'Misafir Kullanıcı'
-    });
-  };
-
-  // Dil ayarını localStorage'dan yükle
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('language');
-    if (savedLanguage === 'tr' || savedLanguage === 'en') {
-      setLanguage(savedLanguage);
-    }
-  }, []);
-
-  // Çeviri fonksiyonu - string türünden çevirileri bulmak için
-  const translate = (key: string): string => {
-    const translations: Record<string, Record<string, string>> = {
-      'add_product': {
-        'tr': 'Ürün Ekle',
-        'en': 'Add Product'
-      },
-      'product_name': {
-        'tr': 'Ürün Adı',
-        'en': 'Product Name'
-      },
-      'price': {
-        'tr': 'Fiyat',
-        'en': 'Price'
-      },
-      'stock': {
-        'tr': 'Stok Miktarı',
-        'en': 'Stock Quantity'
-      },
-      'category': {
-        'tr': 'Kategori',
-        'en': 'Category'
-      },
-      'description': {
-        'tr': 'Ürün Açıklaması',
-        'en': 'Product Description'
-      },
-      'image_url': {
-        'tr': 'Ürün Görseli URL',
-        'en': 'Product Image URL'
-      },
-      'submit': {
-        'tr': 'Gönder',
-        'en': 'Submit'
-      },
-      'success': {
-        'tr': 'Başarılı',
-        'en': 'Success'
-      },
-      'error': {
-        'tr': 'Hata',
-        'en': 'Error'
-      },
-      'home': {
-        'tr': 'Anasayfa',
-        'en': 'Home'
-      },
-      'products': {
-        'tr': 'Ürünler',
-        'en': 'Products'
-      },
-      'management': {
-        'tr': 'Yönetim',
-        'en': 'Management'
-      },
-      'stock_tracking': {
-        'tr': 'Stok Takibi',
-        'en': 'Stock Tracking'
-      },
-      'inventory_tracking': {
-        'tr': 'Depo Giriş-Çıkış Takibi',
-        'en': 'Inventory Tracking'
-      },
-      'finance_tracking': {
-        'tr': 'Gelir-Gider Takibi',
-        'en': 'Finance Tracking'
-      },
-      'activity_log': {
-        'tr': 'İşlem Geçmişi',
-        'en': 'Activity Log'
-      },
-      'review_management': {
-        'tr': 'Yorum Yönetimi',
-        'en': 'Review Management'
-      },
-      'close_panel': {
-        'tr': 'Paneli Kapat',
-        'en': 'Close Panel'
-      },
-      'search_product': {
-        'tr': 'Ürün ara...',
-        'en': 'Search products...'
-      },
-      'favorites': {
-        'tr': 'Favorilerim',
-        'en': 'My Favorites'
-      },
-      'cart': {
-        'tr': 'Alışveriş Sepeti',
-        'en': 'Shopping Cart'
-      },
-      'login_register': {
-        'tr': 'Giriş / Kayıt',
-        'en': 'Login / Register'
-      },
-      'profile': {
-        'tr': 'Profil',
-        'en': 'Profile'
-      },
-      'feedback': {
-        'tr': 'Geribildirim',
-        'en': 'Feedback'
-      },
-      'delete_account': {
-        'tr': 'Hesabı Sil',
-        'en': 'Delete Account'
-      },
-      'logout': {
-        'tr': 'Çıkış Yap',
-        'en': 'Logout'
-      },
-      'barcode_scanner': {
-        'tr': 'Barkod Tarayıcı ile Ürün Ara',
-        'en': 'Search Product with Barcode Scanner'
-      },
-      'product_added': {
-        'tr': 'Ürün başarıyla eklendi!',
-        'en': 'Product added successfully!'
-      },
-      'product_add_error': {
-        'tr': 'Ürün eklenirken bir hata oluştu. Lütfen tekrar deneyin.',
-        'en': 'An error occurred while adding the product. Please try again.'
-      },
-      'required_field': {
-        'tr': 'Bu alan gereklidir',
-        'en': 'This field is required'
-      },
-      'valid_price': {
-        'tr': 'Geçerli bir fiyat giriniz',
-        'en': 'Enter a valid price'
-      },
-      'select_category': {
-        'tr': 'Kategori seçiniz',
-        'en': 'Select a category'
-      },
-      'valid_stock': {
-        'tr': 'Stok miktarı 0 veya daha büyük olmalıdır',
-        'en': 'Stock quantity must be 0 or greater'
-      },
-      'clothing': {
-        'tr': 'Giyim',
-        'en': 'Clothing'
-      },
-      'electronics': {
-        'tr': 'Elektronik',
-        'en': 'Electronics'
-      },
-      'accessories': {
-        'tr': 'Aksesuar',
-        'en': 'Accessories'
-      },
-      'other': {
-        'tr': 'Diğer',
-        'en': 'Other'
-      },
-      'add': {
-        'tr': 'Ekle',
-        'en': 'Add'
-      },
-      'back_to_form': {
-        'tr': 'Forma Dön',
-        'en': 'Back to Form'
-      },
-      'select_language': {
-        'tr': 'Dil Seçin',
-        'en': 'Select Language'
-      },
-      'turkish': {
-        'tr': 'Türkçe',
-        'en': 'Turkish'
-      },
-      'english': {
-        'tr': 'İngilizce',
-        'en': 'English'
-      },
-      // Hero Section translations
-      'hero_title': {
-        'tr': 'Stok <span>Yönetim</span> Sistemi',
-        'en': 'Inventory <span>Management</span> System'
-      },
-      'hero_subtitle': {
-        'tr': 'Güçlü çözümümüzle stok takibi yapın, yönetin ve optimize edin.',
-        'en': 'Efficiently track, manage, and optimize your inventory with our powerful solution.'
-      },
-      'feature_stock_tracking': {
-        'tr': 'Gerçek zamanlı stok takibi',
-        'en': 'Real-time stock tracking'
-      },
-      'feature_analytics': {
-        'tr': 'Performans analizleri',
-        'en': 'Performance analytics'
-      },
-      'feature_alerts': {
-        'tr': 'Düşük stok uyarıları',
-        'en': 'Low stock alerts'
-      },
-      'explore_products': {
-        'tr': 'Ürünleri Keşfet',
-        'en': 'Explore Products'
-      },
-      // Products section translations
-      'product_section_title': {
-        'tr': 'Ürünlerimiz',
-        'en': 'Our Products'
-      },
-      'filters': {
-        'tr': 'Filtreler',
-        'en': 'Filters'
-      },
-      'filter_by_category': {
-        'tr': 'Kategoriye Göre Filtrele',
-        'en': 'Filter by Category'
-      },
-      'filter_by_price': {
-        'tr': 'Fiyata Göre Filtrele',
-        'en': 'Filter by Price'
-      },
-      'sort_by': {
-        'tr': 'Sırala',
-        'en': 'Sort By'
-      },
-      'featured': {
-        'tr': 'Öne Çıkanlar',
-        'en': 'Featured'
-      },
-      'price_low_to_high': {
-        'tr': 'Fiyat: Düşükten Yükseğe',
-        'en': 'Price: Low to High'
-      },
-      'price_high_to_low': {
-        'tr': 'Fiyat: Yüksekten Düşüğe',
-        'en': 'Price: High to Low'
-      },
-      'name_a_to_z': {
-        'tr': 'İsim: A-Z',
-        'en': 'Name: A-Z'
-      },
-      'name_z_to_a': {
-        'tr': 'İsim: Z-A',
-        'en': 'Name: Z-A'
-      },
-      'in_stock_only': {
-        'tr': 'Sadece Stokta Olanlar',
-        'en': 'In Stock Only'
-      },
-      'clear_filters': {
-        'tr': 'Filtreleri Temizle',
-        'en': 'Clear Filters'
-      },
-      'min_price': {
-        'tr': 'Min Fiyat',
-        'en': 'Min Price'
-      },
-      'max_price': {
-        'tr': 'Max Fiyat',
-        'en': 'Max Price'
-      },
-      'apply_filters': {
-        'tr': 'Filtreleri Uygula',
-        'en': 'Apply Filters'
-      },
-      'no_products_found': {
-        'tr': 'Eşleşen ürün bulunamadı, lütfen filtrelerinizi değiştirin.',
-        'en': 'No products found matching your criteria, please adjust your filters.'
-      },
-      'active_filters': {
-        'tr': 'Aktif Filtreler',
-        'en': 'Active Filters'
-      },
-      'all_categories': {
-        'tr': 'Tüm Kategoriler',
-        'en': 'All Categories'
-      },
     };
 
-    return translations[key]?.[language] || key;
-  };
+    fetchProducts();
+  }, []); // Sadece component mount olduğunda çalışsın
 
-  const translateCustom = (turkishText: string, englishText: string): string => {
-    return language === 'tr' ? turkishText : englishText;
-  };
+  // Kullanıcı oturumunu kontrol etme (API bağlı, useCallback eklendi)
+ 
 
-  // Authentication methods
-  const login = (email: string, password: string): boolean => {
+  const getStockStatus = useCallback((productId: string): number => {
+    const product = products.find(p => p._id === productId);
+    return product ? product.stock : 0;
+  }, [products]);
+
+  const checkLowStockItems = useCallback((threshold: number = 10): ProductProps[] => {
+    return products.filter(product => product.stock < threshold);
+  }, [products]);
+
+  const updateStock = useCallback(async (productId: string, newStock: number) => {
     setIsLoading(true);
-    //API çağrısı yapılacak yer
-
-
-    setTimeout(() => {
-      setUser({
-        username: 'demo_user',
-        email: email,
-        isLoggedIn: true
-      });
-      setIsLoading(false);
-    }, 1000);
-
-    return true;
-  };
-
-  const register = (username: string, email: string, password: string): boolean => {
-    setIsLoading(true);
-    // API çağrısı yapılacak yer
-
-
-    setTimeout(() => {
-      setUser({
-        username: username,
-        email: email,
-        isLoggedIn: true
-      });
-      setIsLoading(false);
-    }, 1000);
-
-    return true;
-  };
-
-  const logout = () => {
-    setUser(null);
-    // temizle
-  };
-
-  const updateUser = (currentPassword: string, newUsername?: string, newPassword?: string): boolean => {
-    if (!user) return false;
-    setIsLoading(true);
-
-    // API çağrısı yapılacak yer 
-
-
-    setTimeout(() => {
-      setUser(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          username: newUsername || prev.username
-        };
-      });
-      setIsLoading(false);
-    }, 1000);
-
-    return true;
-  };
-
-  const deleteAccount = async (password: string): Promise<boolean> => {
-    if (!user) return false;
-    setIsLoading(true);
+    const oldProduct = products.find(p => p._id === productId);
 
     try {
-      // API çağrısı burada yapılır
-      // Bu örnek için sadece bir gecikme eklenmiştir
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setProducts(prevProducts =>
+        prevProducts.map(product =>
+          product._id === productId
+            ? { ...product, stock: newStock }
+            : product
+        )
+      );
 
-      // Gerçek bir uygulamada burada API'ye istek yapılır
-      // Eğer API çağrısı başarılı olursa, kullanıcıyı silip state'i güncelleriz
-
-      setUser(null); // Kullanıcı state'ini temizle
-      localStorage.removeItem('user'); // Depolanan kullanıcı bilgilerini temizle
-
-      setIsLoading(false);
-      return true; // Başarılı
-    } catch (error) {
-      console.error('Hesap silme hatası:', error);
-      setIsLoading(false);
-      return false; // Başarısız
-    }
-  };
-
-  const resetPassword = (email: string): boolean => {
-    setIsLoading(true);
-
-    // API çağrısı yapılacak yer
-
-
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return true;
-  };
-
-  const submitFeedback = (rating: number, comment: string): boolean => {
-    setIsLoading(true);
-
-    // API çağrısı yapılacak yer
-
-
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return true;
-  };
-
-
-  // Stok durumunu getir
-  const getStockStatus = (productId: number): number => {
-    const product = products.find(p => p.id === productId);
-    return product ? product.stock : 0;
-  };
-
-  // Stok miktarı az olan ürünleri kontrol et (stok < 10 olarak varsayıyoruz)
-  const checkLowStockItems = (): ProductProps[] => {
-    return products.filter(product => product.stock < 10);
-  };
-
-  // Stok miktarını güncelle
-  const updateStock = (productId: number, newStock: number) => {
-    const oldProduct = products.find(p => p.id === productId);
-
-    setProducts(prevProducts =>
-      prevProducts.map(product =>
-        product.id === productId
-          ? { ...product, stock: newStock }
-          : product
-      )
-    );
-
-    // İşlem logunu ekle
-    if (oldProduct) {
-      addActivityLog({
-        action: 'stock_update',
-        description: `"${oldProduct.title}" ürününün stok miktarı güncellendi`,
+      if (oldProduct) {
+        ({
+          action: 'stock_update_success',
+          description: `"${oldProduct.title}" ürününün stok miktarı güncellendi`,
+          details: {
+            productId: oldProduct._id,
+            oldStock: oldProduct.stock,
+            newStock,
+            productName: oldProduct.title
+          },
+        });
+      }
+    } catch (error: any) {
+      console.error('Stok güncelleme hatası:', error);
+      ({
+        action: 'stock_update_failed',
+        description: `"${oldProduct?.title || productId}" ürününün stok güncellemesi başarısız oldu`,
         details: {
-          productId,
-          oldStock: oldProduct.stock,
+          productId: productId,
           newStock,
-          productName: oldProduct.title
+          error: error.message
         },
-        performedBy: user?.username || 'Misafir Kullanıcı'
       });
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [products, setProducts, addActivityLog]);
 
-  // Depo Giriş-Çıkış işlemleri
-  const addInventoryTransaction = (transaction: Omit<InventoryTransaction, 'id' | 'date'>) => {
-    const newTransaction: InventoryTransaction = {
-      ...transaction,
-      id: Date.now(),
-      date: new Date()
-    };
+  const addInventoryTransaction = useCallback(async (transactionData: Omit<InventoryTransaction, '_id' | 'date' | 'createdBy' | 'productName'>) => {
+    setIsLoading(true);
+    try {
+      console.log('Envanter işlemi ekleniyor:', transactionData);
+      
+      // Hata kontrolü ekleyin
+      if (!transactionData.productId || !transactionData.type || transactionData.quantity === undefined) {
+        throw new Error('Geçersiz envanter işlemi verileri');
+      }
+      
+      // API isteğini try-catch bloğu içinde yapın
+      try {
+        // Backend 'in' ve 'out' yerine 'inbound' ve 'outbound' bekliyor
+        const mappedType = transactionData.type === 'in' ? 'inbound' : 'outbound';
+        
+        const response: ApiResponse<InventoryTransaction> = await api.post('/inventory/transactions', {
+          ...transactionData,
+          type: mappedType
+        });
+        
+        if (!response.data) {
+          throw new Error('Sunucu geçerli veri döndürmedi');
+        }
+        
+        const newTransaction = response.data;
 
-    setInventoryTransactions(prev => [...prev, newTransaction]);
+         // TypeScript'in any tipini kullanarak tip uyumsuzluğunu geçici olarak aşıyoruz
+         const backendType = (newTransaction as any).type;
+         const frontendType = backendType === 'inbound' ? 'in' : 'out';
+         const updatedTransaction = {
+           ...newTransaction,
+           type: frontendType as 'in' | 'out'
+         };
 
-    // Stok miktarını güncelle
-    const product = products.find(p => p.id === transaction.productId);
-    if (product) {
-      const newStock = transaction.type === 'in'
-        ? product.stock + transaction.quantity
-        : product.stock - transaction.quantity;
+        const product = products.find(p => p._id === transactionData.productId);
+        if (!product) {
+          ({
+            action: `inventory_${transactionData.type}_failed`,
+            description: `Depo işlemi başarısız oldu: Ürün bulunamadı (${transactionData.productId})`,
+            details: { ...transactionData },
+          });
+          throw new Error(`Ürün bulunamadı: ${transactionData.productId}`);
+        }
 
-      // Stok negatif olmasın
-      updateStock(product.id, Math.max(0, newStock));
+        const calculatedNewStock = transactionData.type === 'in'
+          ? product.stock + transactionData.quantity
+          : product.stock - transactionData.quantity;
+        await updateStock(product._id, Math.max(0, calculatedNewStock));
+
+        setInventoryTransactions(prev => [...prev, updatedTransaction]);
+
+        ({
+          action: `inventory_${frontendType}_success`,
+          description: `"${newTransaction.productName}" için ${frontendType === 'in' ? 'giriş' : 'çıkış'} işlemi yapıldı`,
+          details: { ...updatedTransaction, productId: updatedTransaction.productId, productName: updatedTransaction.productName },
+        });
+      } catch (error: any) {
+        console.error('Depo işlemi hatası:', error);
+       ({
+          action: `inventory_${transactionData.type}_failed`,
+          description: `Depo işlemi başarısız oldu: ${error.message}`,
+          details: { ...transactionData, error: error.message },
+        });
+        throw error;
+      }
+    } catch (error: any) {
+      console.error('Envanter işlemi hatası:', error);
+      ({
+        action: 'inventory_add_failed',
+        description: `Envanter işlemi başarısız oldu: ${error.message}`,
+        details: { ...transactionData, error: error.message },
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
+  }, [products, updateStock, setIsLoading, setInventoryTransactions, addActivityLog]);
 
-    // İşlem logunu ekle
-    addActivityLog({
-      action: `inventory_${transaction.type}`,
-      description: `"${transaction.productName}" için ${transaction.type === 'in' ? 'giriş' : 'çıkış'} işlemi yapıldı`,
-      details: {
-        ...transaction,
-        productName: transaction.productName
-      },
-      performedBy: user?.username || 'Misafir Kullanıcı'
-    });
-  };
-
-  const getInventoryTransactionsByProduct = (productId: number) => {
+  const getInventoryTransactionsByProduct = useCallback((productId: string): InventoryTransaction[] => {
     return inventoryTransactions.filter(t => t.productId === productId);
-  };
+  }, [inventoryTransactions]);
 
-  const getInventoryTransactionsByType = (type: 'in' | 'out') => {
+  const getInventoryTransactionsByType = useCallback((type: 'in' | 'out'): InventoryTransaction[] => {
     return inventoryTransactions.filter(t => t.type === type);
-  };
+  }, [inventoryTransactions]);
 
-  // Gelir Gider işlemleri
-  const addFinancialTransaction = (transaction: Omit<FinancialTransaction, 'id' | 'date'>) => {
-    const newTransaction: FinancialTransaction = {
-      ...transaction,
-      id: Date.now(),
-      date: new Date()
-    };
-
-    setFinancialTransactions(prev => [...prev, newTransaction]);
-
-    // İşlem logunu ekle
-    addActivityLog({
-      action: `finance_${transaction.type}`,
-      description: `${transaction.type === 'income' ? 'Gelir' : 'Gider'} işlemi: ${transaction.description}`,
-      details: {
-        ...transaction
-      },
-      performedBy: user?.username || 'Misafir Kullanıcı'
-    });
-  };
-
-  const getFinancialSummary = () => {
+  const getFinancialSummary = useCallback(() => {
     const totalIncome = financialTransactions
       .filter(t => t.type === 'income')
       .reduce((sum, t) => sum + t.amount, 0);
@@ -863,194 +299,38 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       totalExpense,
       balance: totalIncome - totalExpense
     };
-  };
+  }, [financialTransactions]);
 
-  const getFinancialTransactionsByCategory = (category: string) => {
+  const getFinancialTransactionsByCategory = useCallback((category: string): FinancialTransaction[] => {
     return financialTransactions.filter(t => t.category === category);
-  };
+  }, [financialTransactions]);
 
-  const getFinancialTransactionsByType = (type: 'income' | 'expense') => {
+  const getFinancialTransactionsByType = useCallback((type: 'income' | 'expense'): FinancialTransaction[] => {
     return financialTransactions.filter(t => t.type === type);
-  };
+  }, [financialTransactions]);
 
-  const getFinancialTransactionsByDateRange = (startDate: Date, endDate: Date) => {
-    return financialTransactions.filter(t =>
-      t.date >= startDate && t.date <= endDate
-    );
-  };
-
-  // İşlem Geçmişi işlemleri
-  const addActivityLog = (log: Omit<ActivityLog, 'id' | 'date'>) => {
-    const newLog: ActivityLog = {
-      ...log,
-      id: Date.now(),
-      date: new Date()
-    };
-
-    setActivityLogs(prev => [newLog, ...prev]); // Yeni log'u başa ekle
-
-    // Gerçek uygulamada, logları localStorage veya backend'de saklayabilirsiniz
-    const savedLogs = localStorage.getItem('activityLogs');
-    let updatedLogs = [];
-
-    if (savedLogs) {
-      try {
-        updatedLogs = [newLog, ...JSON.parse(savedLogs)];
-      } catch (e) {
-        updatedLogs = [newLog];
+  const getFinancialTransactionsByDateRange = useCallback((startDate: Date, endDate: Date): FinancialTransaction[] => {
+    return financialTransactions.filter(t => {
+      const transactionDate = new Date(t.date);
+      if (isNaN(transactionDate.getTime())) {
+        console.warn("Geçersiz tarih formatı:", t.date);
+        return false;
       }
-    } else {
-      updatedLogs = [newLog];
-    }
+      return transactionDate >= startDate && transactionDate <= endDate;
+    });
+  }, [financialTransactions]);
 
-    localStorage.setItem('activityLogs', JSON.stringify(updatedLogs));
-  };
+  
 
-  // Sayfa yüklendiğinde localStorage'dan logları al
-  useEffect(() => {
-    const savedLogs = localStorage.getItem('activityLogs');
-    if (savedLogs) {
-      try {
-        const parsedLogs = JSON.parse(savedLogs);
-        // Date nesnelerini string'den Date'e çevir
-        const formattedLogs = parsedLogs.map((log: any) => ({
-          ...log,
-          date: new Date(log.date)
-        }));
-
-        setActivityLogs(formattedLogs);
-      } catch (e) {
-        console.error('İşlem geçmişi yüklenirken hata oluştu:', e);
-        localStorage.removeItem('activityLogs');
-      }
-    }
-  }, []); // Sadece başlangıçta çalış
-
-  const getActivityLogsByAction = (action: string) => {
-    return activityLogs.filter(log => log.action === action);
-  };
-
-  const getActivityLogsByUser = (username: string) => {
-    return activityLogs.filter(log => log.performedBy === username);
-  };
-
-  const getActivityLogsByDateRange = (startDate: Date, endDate: Date) => {
-    return activityLogs.filter(log =>
-      log.date >= startDate && log.date <= endDate
-    );
-  };
-
-  const clearActivityLogs = () => {
-    setActivityLogs([]);
-    localStorage.removeItem('activityLogs');
-  };
-
-  // Başlangıçta localStorage'dan yorumları yükle
-  useEffect(() => {
-    const savedReviews = localStorage.getItem('productReviews');
-    if (savedReviews) {
-      try {
-        const parsedReviews = JSON.parse(savedReviews);
-        // Date nesnelerini string'den Date'e çevir
-        const formattedReviews = parsedReviews.map((review: any) => ({
-          ...review,
-          date: new Date(review.date)
-        }));
-
-        setReviews(formattedReviews);
-      } catch (e) {
-        console.error('Yorumlar yüklenirken hata oluştu:', e);
-        localStorage.removeItem('productReviews');
-      }
-    }
-  }, []); // Sadece başlangıçta çalış
-
-  // Yorumları localStorage'a kaydet
-  useEffect(() => {
-    localStorage.setItem('productReviews', JSON.stringify(reviews));
+  const getReviewsByProduct = useCallback((productId: string): Review[] => {
+    return reviews.filter(review => review.productId === productId);
   }, [reviews]);
 
-  // Yorum ekleme fonksiyonu
-  const addReview = (review: Omit<Review, 'id' | 'date' | 'isApproved'>) => {
-    const newReview: Review = {
-      ...review,
-      id: Date.now(),
-      date: new Date(),
-      isApproved: false // Varsayılan olarak onaylanmamış durumda
-    };
-
-    setReviews(prev => [newReview, ...prev]);
-
-    // İşlem loguna ekle
-    addActivityLog({
-      action: 'review_add',
-      description: `"${products.find(p => p.id === review.productId)?.title}" ürünü için yorum eklendi`,
-      details: {
-        ...newReview,
-        productName: products.find(p => p.id === review.productId)?.title
-      },
-      performedBy: user?.username || 'Misafir Kullanıcı'
-    });
-  };
-
-  // Yorum silme fonksiyonu
-  const deleteReview = (reviewId: number) => {
-    const reviewToDelete = reviews.find(r => r.id === reviewId);
-
-    if (reviewToDelete) {
-      setReviews(prev => prev.filter(r => r.id !== reviewId));
-
-      // İşlem loguna ekle
-      addActivityLog({
-        action: 'review_delete',
-        description: `"${products.find(p => p.id === reviewToDelete.productId)?.title}" ürünü için yorum silindi`,
-        details: {
-          ...reviewToDelete,
-          productName: products.find(p => p.id === reviewToDelete.productId)?.title
-        },
-        performedBy: user?.username || 'Misafir Kullanıcı'
-      });
-    }
-  };
-
-  // Yorum onaylama fonksiyonu
-  const approveReview = (reviewId: number) => {
-    setReviews(prev =>
-      prev.map(review =>
-        review.id === reviewId
-          ? { ...review, isApproved: true }
-          : review
-      )
-    );
-
-    const approvedReview = reviews.find(r => r.id === reviewId);
-
-    if (approvedReview) {
-      // İşlem loguna ekle
-      addActivityLog({
-        action: 'review_approve',
-        description: `"${products.find(p => p.id === approvedReview.productId)?.title}" ürünü için yorum onaylandı`,
-        details: {
-          ...approvedReview,
-          productName: products.find(p => p.id === approvedReview.productId)?.title
-        },
-        performedBy: user?.username || 'Misafir Kullanıcı'
-      });
-    }
-  };
-
-  // Ürüne göre yorumları getirme fonksiyonu
-  const getReviewsByProduct = (productId: number) => {
-    return reviews.filter(review => review.productId === productId);
-  };
-
-  // Kullanıcıya göre yorumları getirme fonksiyonu
-  const getReviewsByUser = (userId: string) => {
+  const getReviewsByUser = useCallback((userId: string): Review[] => {
     return reviews.filter(review => review.userId === userId);
-  };
+  }, [reviews]);
 
-  // Ortalama puanı hesaplama fonksiyonu
-  const getAverageRating = (productId: number) => {
+  const getAverageRating = useCallback((productId: string): number => {
     const productReviews = reviews.filter(
       review => review.productId === productId && review.isApproved
     );
@@ -1058,76 +338,406 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (productReviews.length === 0) return 0;
 
     const totalRating = productReviews.reduce((sum, review) => sum + review.rating, 0);
-    return totalRating / productReviews.length;
-  };
+    return parseFloat((totalRating / productReviews.length).toFixed(1));
+  }, [reviews]);
 
-  // Add to favorites function
-  const addToFavorites = (product: ProductProps) => {
-    // Check if product already exists in favorites
-    if (!favoriteItems.some(item => item.id === product.id)) {
+  const addToFavorites = useCallback((product: ProductProps) => {
+    if (!favoriteItems.some(item => item._id === product._id)) {
       setFavoriteItems(prev => [...prev, product]);
+      
+    } else {
+      console.warn(`Ürün zaten favorilerde: ${product.title}`);
+    }
+  }, [favoriteItems, user, addActivityLog, setFavoriteItems]);
 
-      // Log activity if user is logged in
-      if (user && user.isLoggedIn) {
-        addActivityLog({
-          action: 'add_to_favorites',
-          description: `Added ${product.title} to favorites`,
-          details: { productId: product.id },
-          performedBy: user.username
+  const removeFromFavorites = useCallback((productId: string) => {
+    const removedProduct = favoriteItems.find(item => item._id === productId);
+    setFavoriteItems(prev => prev.filter(item => item._id !== productId));
+    
+    } else if (!removedProduct) {
+      console.warn(`Favorilerden çıkarılacak ürün bulunamadı: ${productId}`);
+    }
+  }, [favoriteItems, user, addActivityLog, setFavoriteItems]);
+
+  const isFavorite = useCallback((productId: string): boolean => {
+    return favoriteItems.some(item => item._id === productId);
+  }, [favoriteItems]);
+
+  const addProduct = useCallback(async (productData: FormData): Promise<ProductProps> => {
+    setIsLoading(true);
+    try {
+      // FormData'yı doğrudan gönderelim, JSON'a dönüştürmeden
+      console.log('API\'ye gönderilen FormData:', {
+        title: productData.get('title'),
+        price: productData.get('price'),
+        description: productData.get('description'),
+        category: productData.get('category'),
+        sku: productData.get('sku'),
+        stock: productData.get('stock'),
+        image: productData.get('image'),
+        imageUrl: productData.get('imageUrl')
+      });
+      
+      // Content-Type header'ı otomatik olarak multipart/form-data olarak ayarlanacak
+      const response: ApiResponse<ProductProps> = await api.post('/products', productData);
+      const newProduct = response.data;
+
+      // Backend'den dönen veriyi kontrol et
+      console.log('Backend\'den dönen ürün:', newProduct);
+
+      // Frontend'de kullanmak için image alanını ekleyelim
+      const newProductWithImage = {
+        ...newProduct,
+        // Eğer backend'den gelen image varsa onu kullan, yoksa FormData'dan al
+        image: newProduct.image || productData.get('imageUrl') as string || '',
+        // Price değerinin sayı olduğundan emin olalım
+        price: typeof newProduct.price === 'number' ? newProduct.price : 
+               typeof newProduct.price === 'string' ? parseFloat(newProduct.price) : 0
+      };
+
+      console.log('Frontend\'de kullanılacak ürün:', newProductWithImage);
+
+      setProducts(prevProducts => [...prevProducts, newProductWithImage]);
+
+      addActivityLog({
+        action: 'product_added_success',
+        description: `Yeni ürün eklendi: "${newProduct.title}"`,
+        details: { productId: newProduct._id, productName: newProduct.title, createdBy: user?.username },
+      });
+
+      return newProductWithImage;
+    } catch (error: any) {
+      // Hata detaylarını daha ayrıntılı loglayalım
+      console.error('Ürün ekleme hatası:', error);
+      console.error('Hata yanıtı:', error.response?.data);
+      console.error('Hata durumu:', error.response?.status);
+      
+      addActivityLog({
+        action: 'product_add_failed',
+        description: `Ürün ekleme başarısız oldu: ${error.message}`,
+        details: { 
+          title: productData.get('title'), 
+          error: error.message, 
+          errorDetails: error.response?.data,
+          createdBy: user?.username 
+        },
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setIsLoading, setProducts, addActivityLog, user]);
+
+  const updateProduct = useCallback(async (productId: string, productData: ProductProps): Promise<void> => {
+    setIsLoading(true);
+    try {
+      // API isteği gönder
+      const response: ApiResponse<ProductProps> = await api.put(`/products/${productId}`, productData);
+      const updatedProduct = response.data;
+
+      // Ürün listesini güncelle
+      setProducts(prevProducts =>
+        prevProducts.map(product =>
+          product._id === productId ? updatedProduct : product
+        )
+      );
+
+      // İşlem logu ekle
+     
+    } catch (error: any) {
+      console.error('Ürün güncelleme hatası:', error);
+      
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setIsLoading, setProducts, addActivityLog, user]);
+
+  const deleteProduct = useCallback(async (productId: string): Promise<void> => {
+    setIsLoading(true);
+    const productToDelete = products.find(p => p._id === productId);
+    
+    try {
+      // API isteği gönder
+      await api.delete(`/products/${productId}`);
+      
+      // Ürün listesini güncelle
+      setProducts(prevProducts => prevProducts.filter(product => product._id !== productId));
+      
+      // İşlem logu ekle
+      if (productToDelete) {
+       ({
+          action: 'product_delete_success',
+          description: `Ürün silindi: "${productToDelete.title}"`,
+          details: { 
+            productId, 
+            productName: productToDelete.title, 
+            deletedBy: user?.username 
+          },
         });
       }
+    } catch (error: any) {
+      console.error('Ürün silme hatası:', error);
+     ({
+        action: 'product_delete_failed',
+        description: `Ürün silme başarısız oldu: ${error.message}`,
+        details: { 
+          productId, 
+          productName: productToDelete?.title || 'Bilinmeyen ürün', 
+          error: error.message, 
+          deletedBy: user?.username 
+        },
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [products, setIsLoading, setProducts, addActivityLog, user]);
 
-  // Remove from favorites function
-  const removeFromFavorites = (productId: number) => {
-    setFavoriteItems(prev => prev.filter(item => item.id !== productId));
+  const handleSetLanguage = useCallback((lang: 'tr' | 'en') => {
+    const oldLanguage = language;
+    setLanguage(lang);
+    localStorage.setItem('language', lang);
 
-    // Log activity if user is logged in
-    if (user && user.isLoggedIn) {
-      const product = products.find(p => p.id === productId);
-      if (product) {
-        addActivityLog({
-          action: 'remove_from_favorites',
-          description: `Removed ${product.title} from favorites`,
-          details: { productId },
-          performedBy: user.username
-        });
-      }
-    }
-  };
-
-  // Check if a product is in favorites
-  const isFavorite = (productId: number): boolean => {
-    return favoriteItems.some(item => item.id === productId);
-  };
-
-  const addProduct = (product: Omit<ProductProps, 'id'>) => {
-    // Yeni ürün ID'si - en büyük ID'nin bir fazlası
-    const newId = products.length > 0
-      ? Math.max(...products.map(p => p.id)) + 1
-      : 1;
-
-    // Yeni ürünü products listesine ekle
-    const newProduct: ProductProps = {
-      ...product,
-      id: newId
-    };
-
-    setProducts(prevProducts => [...prevProducts, newProduct]);
-
-    // Aktivite loguna ekle
     addActivityLog({
-      action: 'product_added',
-      description: `Yeni ürün eklendi: ${product.title}`,
-      details: { product: newProduct },
-      performedBy: user?.username || 'Misafir Kullanıcı'
+      action: 'language_change_success',
+      description: `Dil değiştirildi: ${lang === 'tr' ? 'Türkçe' : 'İngilizce'}`,
+      details: { previousLanguage: oldLanguage, newLanguage: lang },
     });
+  }, [language, addActivityLog, setLanguage]);
 
-    return newProduct;
-  };
+  const translate = useCallback((key: string): string => {
+    const translations: Record<string, Record<string, string>> = {
+      'home': { 'tr': 'Anasayfa', 'en': 'Home' },
+      'products': { 'tr': 'Ürünler', 'en': 'Products' },
+      'management': { 'tr': 'Yönetim', 'en': 'Management' },
+      'close_panel': { 'tr': 'Paneli Kapat', 'en': 'Close Panel' },
+      'stock_tracking': { 'tr': 'Stok Takibi', 'en': 'Stock Tracking' },
+      'inventory_tracking': { 'tr': 'Depo Giriş-Çıkış', 'en': 'Inventory Transactions' },
+      'finance_tracking': { 'tr': 'Finans Takibi', 'en': 'Finance Tracking' },
+      'activity_log': { 'tr': 'İşlem Geçmişi', 'en': 'Activity Log' },
+      'review_management': { 'tr': 'Yorum Yönetimi', 'en': 'Review Management' },
+      'select_language': { 'tr': 'Dil Seçimi', 'en': 'Select Language' },
+      'turkish': { 'tr': 'Türkçe', 'en': 'Turkish' },
+      'english': { 'tr': 'İngilizce', 'en': 'English' },
+      'search_product': { 'tr': 'Ürün Ara...', 'en': 'Search product...' },
+      'profile': { 'tr': 'Profil', 'en': 'Profile' },
+      'feedback': { 'tr': 'Geribildirim', 'en': 'Feedback' },
+      'logout': { 'tr': 'Çıkış Yap', 'en': 'Logout' },
+      'login_register': { 'tr': 'Giriş/Kayıt', 'en': 'Login/Register' },
+      'cart': { 'tr': 'Sepet', 'en': 'Cart' },
+      'favorites': { 'tr': 'Favoriler', 'en': 'Favorites' },
+      'hero_title': { 'tr': 'Stoklarınızı <br/> Kolayca Yönetin', 'en': 'Manage Your <br/> Stocks Easily' },
+      'hero_subtitle': { 'tr': 'İşletmenizin envanterini etkili bir şekilde takip edin ve kontrol altında tutun.', 'en': 'Effectively track and control your business inventory.' },
+      'feature_stock_tracking': { 'tr': 'Gerçek Zamanlı Stok Takibi', 'en': 'Real-time Stock Tracking' },
+      'feature_analytics': { 'tr': 'Detaylı Analiz ve Raporlama', 'en': 'Detailed Analytics and Reporting' },
+      'feature_alerts': { 'tr': 'Düşük Stok ve Sipariş Uyarıları', 'en': 'Low Stock and Order Alerts' },
+      'explore_products': { 'tr': 'Ürünleri Keşfet', 'en': 'Explore Products' },
+      'add_product': { 'tr': 'Ürün Ekle', 'en': 'Add Product' },
+      'all_categories': { 'tr': 'Tüm Kategoriler', 'en': 'All Categories' },
+      'all_products': { 'tr': 'Tüm Ürünler', 'en': 'All Products' },
+      
+      // Ana sayfa için yeni çeviri anahtarları
+      'stockControlSystem': { 'tr': 'Stok Kontrol Sistemi', 'en': 'Stock Control System' },
+      'modernStockSolution': { 'tr': 'Modern, hızlı ve kullanımı kolay stok yönetim çözümü', 'en': 'Modern, fast and easy-to-use stock management solution' },
+      'login': { 'tr': 'Giriş Yap', 'en': 'Login' },
+      'register': { 'tr': 'Kayıt Ol', 'en': 'Register' },
+      'viewProducts': { 'tr': 'Ürünleri Görüntüle', 'en': 'View Products' },
+      'features': { 'tr': 'Özellikler', 'en': 'Features' },
+      'stockTracking': { 'tr': 'Stok Takibi', 'en': 'Stock Tracking' },
+      'stockTrackingDesc': { 'tr': 'Ürünlerinizin stok durumunu gerçek zamanlı olarak takip edin ve stok seviyelerini yönetin.', 'en': 'Track your products\' stock status in real-time and manage stock levels.' },
+      'detailedSearch': { 'tr': 'Detaylı Arama', 'en': 'Detailed Search' },
+      'detailedSearchDesc': { 'tr': 'Gelişmiş arama özellikleri ile ürünlerinizi hızlıca bulun ve filtreleme yapın.', 'en': 'Find your products quickly and filter with advanced search features.' },
+      'mobileCompatible': { 'tr': 'Mobil Uyumlu', 'en': 'Mobile Compatible' },
+      'mobileCompatibleDesc': { 'tr': 'Her cihazda sorunsuz çalışan duyarlı tasarım ile her yerden erişim sağlayın.', 'en': 'Access from anywhere with responsive design that works seamlessly on every device.' },
+      'reporting': { 'tr': 'Raporlama', 'en': 'Reporting' },
+      'reportingDesc': { 'tr': 'Detaylı raporlar ve analizler ile işletmenizin performansını takip edin.', 'en': 'Track your business performance with detailed reports and analytics.' },
+      'howItWorks': { 'tr': 'Nasıl Çalışır?', 'en': 'How It Works?' },
+      'registerDesc': { 'tr': 'Hızlı ve kolay kayıt işlemi ile sisteme erişim sağlayın.', 'en': 'Access the system with a quick and easy registration process.' },
+      'addProducts': { 'tr': 'Ürünleri Ekleyin', 'en': 'Add Products' },
+      'addProductsDesc': { 'tr': 'Ürünlerinizi sisteme ekleyin ve kategorilere ayırın.', 'en': 'Add your products to the system and categorize them.' },
+      'trackStock': { 'tr': 'Stok Takibi Yapın', 'en': 'Track Stock' },
+      'trackStockDesc': { 'tr': 'Stok hareketlerini izleyin ve gerektiğinde uyarılar alın.', 'en': 'Monitor stock movements and receive alerts when necessary.' },
+      'startNow': { 'tr': 'Hemen Başlayın', 'en': 'Start Now' },
+      'startNowDesc': { 'tr': 'Ücretsiz hesap oluşturun ve stok yönetimini kolaylaştırın.', 'en': 'Create a free account and simplify stock management.' },
+      'registerFree': { 'tr': 'Ücretsiz Kayıt Ol', 'en': 'Register for Free' },
+    };
+    return translations[key]?.[language] || key;
+  }, [language]);
 
-  const value: AppContextType = {
+  const translateCustom = useCallback((turkishText: string, englishText: string): string => {
+    return language === 'tr' ? turkishText : englishText;
+  }, [language]);
+
+  // Cart işlemleri için fonksiyonlar
+  const addToCart = useCallback((product: ProductProps) => {
+    setCartItems(prev => {
+      const existingItem = prev.find(item => item._id === product._id);
+      if (existingItem) {
+        return prev.map(item =>
+          item._id === product._id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+  }, []);
+
+  const removeFromCart = useCallback((productId: string) => {
+    setCartItems(prev => prev.filter(item => item._id !== productId));
+  }, []);
+
+  const updateItemQuantity = useCallback((productId: string, quantity: number) => {
+    setCartItems(prev =>
+      prev.map(item =>
+        item._id === productId
+          ? { ...item, quantity: Math.max(0, quantity) }
+          : item
+      )
+    );
+  }, []);
+
+  const clearCart = useCallback(() => {
+    setCartItems([]);
+  }, []);
+
+  // Financial işlemleri için fonksiyonlar
+  const addFinancialTransaction = useCallback(async (transactionData: Omit<FinancialTransaction, '_id' | 'date' | 'createdBy'>) => {
+    try {
+      const newTransaction: Omit<FinancialTransaction, '_id'> = {
+        ...transactionData,
+        date: new Date().toISOString(),
+        createdBy: user?._id || 'system'
+      };
+      
+      const response = await api.post<ApiResponse<FinancialTransaction>>('/financial', newTransaction);
+      
+      if (response.data.data) {
+        setFinancialTransactions(prev => [...prev, response.data.data]);
+      }
+    } catch (error) {
+      console.error('Error adding financial transaction:', error);
+      throw error;
+    }
+  }, [user]);
+
+  // Reviews state'ini güncelleyen fonksiyon
+  const fetchReviews = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/reviews', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && Array.isArray(data.data)) {
+          setReviews(data.data);
+        }
+      }
+    } catch (error) {
+      console.error('Yorumlar yüklenirken hata oluştu:', error);
+    }
+  }, []);
+
+  // Uygulama başladığında yorumları yükle
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
+
+  // Review işlemleri için fonksiyonlar
+  const addReview = useCallback(async (reviewData: Omit<Review, '_id' | 'date' | 'isApproved' | 'userId' | 'username'>) => {
+    try {
+      console.log('Yorum ekleme isteği gönderiliyor:', reviewData);
+      
+      // Health check endpoint'ini test edelim
+      try {
+        const healthResponse = await fetch('http://localhost:5001/api/health', {
+          method: 'GET'
+        });
+        
+        if (healthResponse.ok) {
+          const healthData = await healthResponse.json();
+          console.log('Health check başarılı:', healthData);
+          
+          // Şimdi normal reviews endpoint'ini deneyelim
+          const newReview = {
+            ...reviewData,
+            date: new Date().toISOString(),
+            isApproved: false,
+            userId: user?._id || '',
+            username: user?.username || 'Anonymous'
+          };
+          
+          const reviewResponse = await fetch('http://localhost:5001/api/reviews', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify(newReview)
+          });
+          
+          if (reviewResponse.ok) {
+            const responseData = await reviewResponse.json();
+            console.log('Yorum başarıyla eklendi:', responseData);
+            
+            if (responseData.success && responseData.data) {
+              setReviews(prev => [...prev, responseData.data]);
+              
+              // Yorumlar başarıyla eklendiğinde tüm yorumları yeniden yükle
+              await fetchReviews();
+            }
+            return responseData;
+          } else {
+            const errorData = await reviewResponse.json();
+            console.error('Yorum eklenirken hata:', errorData);
+            throw new Error(errorData.message || 'Yorum eklenirken bir hata oluştu');
+          }
+        } else {
+          console.error('Health check başarısız:', healthResponse.statusText);
+          throw new Error('Backend sunucusuna erişilemiyor');
+        }
+      } catch (error) {
+        console.error('Backend bağlantı hatası:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Yorum ekleme hatası:', error);
+      throw error;
+    }
+  }, [user, fetchReviews]);
+
+  const deleteReview = useCallback(async (reviewId: string) => {
+    try {
+      await api.delete(`/api/reviews/${reviewId}`);
+      setReviews(prev => prev.filter(review => review._id !== reviewId));
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      throw error;
+    }
+  }, []);
+
+  const approveReview = useCallback(async (reviewId: string) => {
+    try {
+      await api.patch(`/api/reviews/${reviewId}/approve`);
+      setReviews(prev =>
+        prev.map(review =>
+          review._id === reviewId
+            ? { ...review, isApproved: true }
+            : review
+        )
+      );
+    } catch (error) {
+      console.error('Error approving review:', error);
+      throw error;
+    }
+  }, []);
+
+  const contextValue = useMemo(() => ({
     cartItems,
     cartTotal,
     addToCart,
@@ -1136,56 +746,33 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     clearCart,
     translate,
     translateCustom,
-    user,
-    login,
-    register,
-    logout,
-    updateUser,
-    deleteAccount,
-    resetPassword,
-    submitFeedback,
+   
     isLoading,
-
-    // Favorites
     favoriteItems,
     addToFavorites,
     removeFromFavorites,
     isFavorite,
-
-    // Stok takibi için fonksiyonlar
     products,
     getStockStatus,
     checkLowStockItems,
     updateStock,
     addProduct,
-
-    // Depo Giriş-Çıkış için
+    updateProduct,
+    deleteProduct,
     inventoryTransactions,
     addInventoryTransaction,
     getInventoryTransactionsByProduct,
     getInventoryTransactionsByType,
-
-    // Gelir Gider için
     financialTransactions,
     addFinancialTransaction,
     getFinancialSummary,
+    totalIncome: getFinancialSummary().totalIncome,
+    totalExpense: getFinancialSummary().totalExpense,
+    balance: getFinancialSummary().balance,
     getFinancialTransactionsByCategory,
     getFinancialTransactionsByType,
     getFinancialTransactionsByDateRange,
-
-    // UI State
-    activeAdminPanel,
-    setActiveAdminPanel,
-
-    // İşlem Geçmişi için
-    activityLogs,
-    addActivityLog,
-    getActivityLogsByAction,
-    getActivityLogsByUser,
-    getActivityLogsByDateRange,
-    clearActivityLogs,
-
-    // Yorum ve Puanlama için
+    
     reviews,
     addReview,
     deleteReview,
@@ -1193,19 +780,97 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     getReviewsByProduct,
     getReviewsByUser,
     getAverageRating,
-
-    // Dil ayarları için
     language,
     setLanguage: handleSetLanguage,
-  };
+    setProducts,
+  }), [
+    cartItems,
+    cartTotal,
+    addToCart,
+    removeFromCart,
+    updateItemQuantity,
+    clearCart,
+    translate,
+    translateCustom,
+    
+    isLoading,
+    favoriteItems,
+    addToFavorites,
+    removeFromFavorites,
+    isFavorite,
+    products,
+    getStockStatus,
+    checkLowStockItems,
+    updateStock,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    inventoryTransactions,
+    addInventoryTransaction,
+    getInventoryTransactionsByProduct,
+    getInventoryTransactionsByType,
+    financialTransactions,
+    addFinancialTransaction,
+    getFinancialSummary,
+    getFinancialTransactionsByCategory,
+    getFinancialTransactionsByType,
+    getFinancialTransactionsByDateRange,
+   
+    reviews,
+    addReview,
+    deleteReview,
+    approveReview,
+    getReviewsByProduct,
+    getReviewsByUser,
+    getAverageRating,
+    language,
+    handleSetLanguage,
+    setProducts,
+  ]);
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  // Diğer useEffect'ler için de dependency array'leri düzenleyelim
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      setCartItems(JSON.parse(savedCart));
+    }
+  }, []); // Sadece bir kez çalışsın
+
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('favorites');
+    if (savedFavorites) {
+      setFavoriteItems(JSON.parse(savedFavorites));
+    }
+  }, []); // Sadece bir kez çalışsın
+
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage) {
+      setLanguage(savedLanguage as 'tr' | 'en');
+    }
+  }, []); // Sadece bir kez çalışsın
+
+  // Cart değişikliklerini kaydeden useEffect
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  // Favorites değişikliklerini kaydeden useEffect
+  useEffect(() => {
+    localStorage.setItem('favorites', JSON.stringify(favoriteItems));
+  }, [favoriteItems]);
+
+  // Language değişikliklerini kaydeden useEffect
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
+
+  return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
 };
-
 
 export const useAppContext = (): AppContextType => {
   const context = useContext(AppContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAppContext must be used within an AppProvider');
   }
   return context;

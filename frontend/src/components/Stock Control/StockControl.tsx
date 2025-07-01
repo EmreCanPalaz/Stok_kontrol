@@ -1,41 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { ProductProps } from '../../context/AppContext';
 import './StockControl.css';
+import { ProductProps } from '../../types/product';
 
 const StockControl: React.FC = () => {
-  const { checkLowStockItems, updateStock } = useAppContext();
-  const [lowStockItems, setLowStockItems] = useState<ProductProps[]>([]);
-  const [editingItemId, setEditingItemId] = useState<number | null>(null);
-  const [newStockValue, setNewStockValue] = useState<number>(0);
+  const { products, checkLowStockItems, updateStock } = useAppContext();
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [newStockValue, setNewStockValue] = useState<number | ''>('');
 
-  useEffect(() => {
-    // Düşük stoklu ürünleri getir
-    const items = checkLowStockItems();
-    setLowStockItems(items);
-  }, [checkLowStockItems]);
+  const lowStockItems = useMemo(() => {
+    return checkLowStockItems(10);
+  }, [products, checkLowStockItems]);
 
-  const handleEditStock = (productId: number, currentStock: number) => {
+  const handleEditStock = (productId: string, currentStock: number) => {
     setEditingItemId(productId);
     setNewStockValue(currentStock);
   };
 
-  const handleSaveStock = (productId: number) => {
-    updateStock(productId, newStockValue);
-    setEditingItemId(null);
+  const handleSaveStock = async (productId: string) => {
+    if (newStockValue === '' || newStockValue < 0) {
+      alert('Lütfen geçerli bir stok değeri girin.');
+      return;
+    }
 
-    // Listeyi güncelle
-    setLowStockItems(prev => 
-      prev.map(item => 
-        item.id === productId 
-          ? { ...item, stock: newStockValue } 
-          : item
-      ).filter(item => item.stock < 10) // Hala düşük stokta olanları filtrele
-    );
+    try {
+      await updateStock(productId, parseInt(newStockValue.toString()));
+      setEditingItemId(null);
+      alert('Stok başarıyla güncellendi!');
+    } catch (error) {
+      console.error('Stok güncelleme hatası:', error);
+      alert('Stok güncellenirken bir hata oluştu.');
+    }
   };
 
   const handleCancelEdit = () => {
     setEditingItemId(null);
+    setNewStockValue('');
   };
 
   if (lowStockItems.length === 0) {
@@ -62,12 +62,12 @@ const StockControl: React.FC = () => {
           </thead>
           <tbody>
             {lowStockItems.map(item => (
-              <tr key={item.id} className={item.stock === 0 ? 'table-danger' : 'table-warning'}>
-                <td>{item.id}</td>
+              <tr key={item._id} className={item.stock === 0 ? 'table-danger' : 'table-warning'}>
+                <td>{item._id}</td>
                 <td>{item.title}</td>
                 <td>{item.category}</td>
                 <td>
-                  {editingItemId === item.id ? (
+                  {editingItemId === item._id ? (
                     <input 
                       type="number" 
                       className="form-control form-control-sm" 
@@ -82,11 +82,11 @@ const StockControl: React.FC = () => {
                   )}
                 </td>
                 <td>
-                  {editingItemId === item.id ? (
+                  {editingItemId === item._id ? (
                     <>
                       <button 
                         className="btn btn-success btn-sm me-1" 
-                        onClick={() => handleSaveStock(item.id)}
+                        onClick={() => handleSaveStock(item._id)}
                       >
                         <i className="bi bi-check"></i> Kaydet
                       </button>
@@ -100,7 +100,7 @@ const StockControl: React.FC = () => {
                   ) : (
                     <button 
                       className="btn btn-primary btn-sm" 
-                      onClick={() => handleEditStock(item.id, item.stock)}
+                      onClick={() => handleEditStock(item._id, item.stock)}
                     >
                       <i className="bi bi-pencil"></i> Stok Güncelle
                     </button>

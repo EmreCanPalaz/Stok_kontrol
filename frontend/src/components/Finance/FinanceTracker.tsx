@@ -1,303 +1,175 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import './FinanceTracker.css';
-
-// Tip tanımını burada yapabiliriz
-interface Product {
-  id: number;
-  title: string;
-  price: number;
-  description: string;
-  category: string;
-  image: string;
-  stock: number;
-}
+import { FinancialTransaction, ProductProps } from '../../types/product';
+import { format } from 'date-fns';
 
 const FinanceTracker: React.FC = () => {
-  const { 
-    financialTransactions, 
-    addFinancialTransaction,
-    getFinancialSummary,
-    products
-  } = useAppContext();
-  
-  const [description, setDescription] = useState<string>('');
-  const [amount, setAmount] = useState<number>(0);
-  const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
-  const [category, setCategory] = useState<string>('');
-  const [relatedProductId, setRelatedProductId] = useState<number | undefined>(undefined);
-  const [filteredTransactions, setFilteredTransactions] = useState(financialTransactions);
-  const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
-  const [dateRange, setDateRange] = useState({
-    startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-    endDate: new Date()
-  });
+  const { products, financialTransactions, addFinancialTransaction, getFinancialSummary, getFinancialTransactionsByCategory, getFinancialTransactionsByType, getFinancialTransactionsByDateRange } = useAppContext();
 
-  const categories = {
-    income: ['Satış', 'Diğer Gelir'],
-    expense: ['Satın Alma', 'Personel', 'Kira', 'Nakliye', 'Diğer Gider']
-  };
-  
-  useEffect(() => {
-    // Tüm işlemleri veya filtrelenmiş işlemleri göster
-    if (filterType === 'all') {
-      setFilteredTransactions([...financialTransactions].sort((a, b) => 
-        new Date(b.date).getTime() - new Date(a.date).getTime()
-      ));
-    } else {
-      setFilteredTransactions(
-        financialTransactions.filter(t => t.type === filterType)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      );
-    }
-  }, [financialTransactions, filterType]);
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState<number | ''>('');
+  const [type, setType] = useState<'income' | 'expense'>('expense');
+  const [category, setCategory] = useState('');
+  const [relatedProductId, setRelatedProductId] = useState<string | ''>('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const financeCategories = type === 'income'
+    ? ['Satış Geliri', 'Hizmet Geliri', 'Diğer Gelirler']
+    : ['Ürün Maliyeti', 'Operasyonel Giderler', 'Pazarlama Giderleri', 'Personel Giderleri', 'Diğer Giderler'];
+
+  const summary = getFinancialSummary();
+
+  const filteredTransactionsByDate = (startDate || endDate) ?
+    getFinancialTransactionsByDateRange(new Date(startDate), new Date(endDate)) :
+    financialTransactions;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!description || !amount || !category) {
-      alert('Lütfen tüm zorunlu alanları doldurun');
+
+    if (amount === '' || amount <= 0) {
+      alert('Lütfen geçerli bir miktar girin.');
       return;
     }
-    
-    // İşlemi ekle
-    addFinancialTransaction({
+    if (!category) {
+        alert('Lütfen bir kategori seçin.');
+        return;
+    }
+
+    const newTransactionData: Omit<FinancialTransaction, '_id' | 'date' | 'createdBy'> = {
       description,
-      amount: transactionType === 'income' ? Math.abs(amount) : -Math.abs(amount),
-      type: transactionType,
+      amount: type === 'expense' ? -parseFloat(amount.toString()) : parseFloat(amount.toString()),
+      type,
       category,
-      relatedProductId,
-      createdBy: 'Mevcut Kullanıcı' // Gerçek uygulamada kullanıcı adı kullanılabilir
-    });
-    
-    // Formu sıfırla
-    setDescription('');
-    setAmount(0);
-    setCategory('');
-    setRelatedProductId(undefined);
-  };
-  
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString('tr-TR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-  
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount);
+      relatedProductId: relatedProductId || undefined,
+    };
+
+    try {
+        await addFinancialTransaction(newTransactionData);
+        setDescription('');
+        setAmount('');
+        setCategory('');
+        setRelatedProductId('');
+        alert('İşlem başarıyla eklendi!');
+    } catch (error) {
+        console.error('Finans işlemi eklenirken hata:', error);
+        alert('Finans işlemi eklenirken bir hata oluştu.');
+    }
   };
 
-  const { totalIncome, totalExpense, balance } = getFinancialSummary();
+  const clearDateFilter = () => {
+    setStartDate('');
+    setEndDate('');
+  };
 
   return (
-    <div className="finance-tracker-container">
-      <h2 className="mb-4">Gelir-Gider Takibi</h2>
-      
-      <div className="row mb-4">
-        <div className="col-md-4">
-          <div className="summary-card income-card">
-            <h3>Toplam Gelir</h3>
-            <div className="amount text-success">{formatCurrency(totalIncome)}</div>
-          </div>
-        </div>
-        <div className="col-md-4">
-          <div className="summary-card expense-card">
-            <h3>Toplam Gider</h3>
-            <div className="amount text-danger">{formatCurrency(totalExpense)}</div>
-          </div>
-        </div>
-        <div className="col-md-4">
-          <div className="summary-card balance-card">
-            <h3>Bakiye</h3>
-            <div className={`amount ${balance >= 0 ? 'text-primary' : 'text-danger'}`}>
-              {formatCurrency(balance)}
-            </div>
-          </div>
-        </div>
+    <div className="finance-tracker">
+      <h2>Finans Takibi</h2>
+
+      <div className="summary">
+        <h3>Özet</h3>
+        <p className="text-success">Toplam Gelir: {summary.totalIncome.toFixed(2)} TL</p>
+        <p className="text-danger">Toplam Gider: {summary.totalExpense.toFixed(2)} TL</p>
+        <h4 className={summary.balance >= 0 ? 'text-success' : 'text-danger'}>Bakiye: {summary.balance.toFixed(2)} TL</h4>
       </div>
-      
-      <div className="row">
-        <div className="col-md-4">
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">Yeni İşlem Ekle</h5>
-            </div>
-            <div className="card-body">
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="transactionType" className="form-label">İşlem Türü</label>
-                  <div className="d-flex">
-                    <div className="form-check me-3">
-                      <input 
-                        type="radio" 
-                        className="form-check-input" 
-                        id="typeIncome" 
-                        name="transactionType" 
-                        value="income" 
-                        checked={transactionType === 'income'} 
-                        onChange={() => {
-                          setTransactionType('income');
-                          setCategory('');
-                        }} 
-                        required
-                      />
-                      <label className="form-check-label" htmlFor="typeIncome">Gelir</label>
-                    </div>
-                    <div className="form-check">
-                      <input 
-                        type="radio" 
-                        className="form-check-input" 
-                        id="typeExpense" 
-                        name="transactionType" 
-                        value="expense" 
-                        checked={transactionType === 'expense'} 
-                        onChange={() => {
-                          setTransactionType('expense');
-                          setCategory('');
-                        }} 
-                        required
-                      />
-                      <label className="form-check-label" htmlFor="typeExpense">Gider</label>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mb-3">
-                  <label htmlFor="category" className="form-label">Kategori</label>
-                  <select 
-                    id="category" 
-                    className="form-select" 
-                    value={category} 
-                    onChange={(e) => setCategory(e.target.value)}
-                    required
-                  >
-                    <option value="">Kategori Seçin</option>
-                    {categories[transactionType].map(cat => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="mb-3">
-                  <label htmlFor="description" className="form-label">Açıklama</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    id="description" 
-                    value={description} 
-                    onChange={(e) => setDescription(e.target.value)} 
-                    required
-                  />
-                </div>
-                
-                <div className="mb-3">
-                  <label htmlFor="amount" className="form-label">Tutar (TL)</label>
-                  <input 
-                    type="number" 
-                    className="form-control" 
-                    id="amount" 
-                    value={amount} 
-                    onChange={(e) => setAmount(parseFloat(e.target.value) || 0)} 
-                    min="0.01" 
-                    step="0.01" 
-                    required
-                  />
-                </div>
-                
-                <div className="mb-3">
-                  <label htmlFor="relatedProduct" className="form-label">İlişkili Ürün (Opsiyonel)</label>
-                  <select 
-                    id="relatedProduct" 
-                    className="form-select" 
-                    value={relatedProductId || ''} 
-                    onChange={(e) => setRelatedProductId(e.target.value ? Number(e.target.value) : undefined)}
-                  >
-                    <option value="">Ürün Seçin (Opsiyonel)</option>
-                    {products.map(product => (
-                      <option key={product.id} value={product.id}>
-                        {product.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <button type="submit" className="btn btn-primary w-100">İşlemi Kaydet</button>
-              </form>
-            </div>
+
+      <div className="add-transaction-form">
+        <h3>Yeni İşlem Ekle</h3>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Tip:</label>
+            <select value={type} onChange={e => setType(e.target.value as 'income' | 'expense')} className="form-control">
+              <option value="expense">Gider</option>
+              <option value="income">Gelir</option>
+            </select>
           </div>
-        </div>
-        
-        <div className="col-md-8">
-          <div className="card">
-            <div className="card-header">
-              <div className="d-flex justify-content-between align-items-center">
-                <h5 className="card-title mb-0">Finansal İşlemler</h5>
-                <div className="btn-group">
-                  <button 
-                    className={`btn btn-sm ${filterType === 'all' ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => setFilterType('all')}
-                  >
-                    Tümü
-                  </button>
-                  <button 
-                    className={`btn btn-sm ${filterType === 'income' ? 'btn-success' : 'btn-outline-success'}`}
-                    onClick={() => setFilterType('income')}
-                  >
-                    Gelir
-                  </button>
-                  <button 
-                    className={`btn btn-sm ${filterType === 'expense' ? 'btn-danger' : 'btn-outline-danger'}`}
-                    onClick={() => setFilterType('expense')}
-                  >
-                    Gider
-                  </button>
-                </div>
-              </div>
+           <div className="form-group">
+            <label>Kategori:</label>
+            <select value={category} onChange={e => setCategory(e.target.value)} className="form-control" required>
+                <option value="">Kategori Seçin</option>
+                {financeCategories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Açıklama:</label>
+            <input type="text" value={description} onChange={e => setDescription(e.target.value)} className="form-control" required />
+          </div>
+          <div className="form-group">
+            <label>Miktar:</label>
+            <input type="number" value={amount} onChange={e => setAmount(parseFloat(e.target.value))} className="form-control" required min="0.01" step="0.01"/>
+          </div>
+           <div className="form-group">
+            <label>İlişkili Ürün (Opsiyonel):</label>
+            <select value={relatedProductId} onChange={e => setRelatedProductId(e.target.value)} className="form-control">
+              <option value="">Ürün Seçin (Opsiyonel)</option>
+               {products.map(product => (
+                 <option key={product._id} value={product._id}>
+                  {product.title}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button type="submit" className="btn btn-primary">Ekle</button>
+        </form>
+      </div>
+
+      <div className="transaction-list mt-4">
+        <h3>İşlemler</h3>
+
+        <div className="date-filter form-inline mb-3">
+            <div className="form-group me-2">
+                <label htmlFor="startDate" className="me-1">Başlangıç Tarihi:</label>
+                <input type="date" id="startDate" value={startDate} onChange={e => setStartDate(e.target.value)} className="form-control" />
             </div>
-            <div className="card-body">
-              {filteredTransactions.length === 0 ? (
-                <div className="alert alert-info">Henüz finansal işlem bulunmamaktadır.</div>
-              ) : (
-                <div className="table-responsive">
-                  <table className="table table-striped table-hover">
-                    <thead>
-                      <tr>
+            <div className="form-group me-2">
+                 <label htmlFor="endDate" className="me-1">Bitiş Tarihi:</label>
+                <input type="date" id="endDate" value={endDate} onChange={e => setEndDate(e.target.value)} className="form-control" />
+            </div>
+             <button className="btn btn-secondary me-2" onClick={clearDateFilter}>Filtreyi Temizle</button>
+        </div>
+
+        {filteredTransactionsByDate.length === 0 ? (
+            <p>Gösterilecek işlem bulunamadı.</p>
+        ) : (
+             <table className="table table-striped">
+                <thead>
+                    <tr>
                         <th>Tarih</th>
+                        <th>Tip</th>
                         <th>Kategori</th>
                         <th>Açıklama</th>
-                        <th>Tutar</th>
-                        <th>İşlemi Yapan</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTransactions.map(transaction => (
-                        <tr key={transaction.id}>
-                          <td>{formatDate(transaction.date)}</td>
-                          <td>
-                            <span className={`badge ${transaction.type === 'income' ? 'bg-success' : 'bg-danger'}`}>
-                              {transaction.category}
-                            </span>
-                          </td>
-                          <td>{transaction.description}</td>
-                          <td className={transaction.amount >= 0 ? 'text-success' : 'text-danger'}>
-                            {formatCurrency(transaction.amount)}
-                          </td>
-                          <td>{transaction.createdBy}</td>
+                        <th>Miktar</th>
+                         <th>İlişkili Ürün</th>
+                         <th>Yapan Kullanıcı</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {filteredTransactionsByDate.map(transaction => (
+                        <tr key={transaction._id}>
+                            <td>{format(new Date(transaction.date), 'dd.MM.yyyy HH:mm')}</td>
+                            <td className={transaction.type === 'income' ? 'text-success' : 'text-danger'}>
+                                {transaction.type === 'income' ? 'Gelir' : 'Gider'}
+                            </td>
+                            <td>{transaction.category}</td>
+                            <td>{transaction.description}</td>
+                            <td className={transaction.type === 'income' ? 'text-success' : 'text-danger'}>
+                                {transaction.type === 'expense' ? '-' : ''}{Math.abs(transaction.amount).toFixed(2)} TL
+                            </td>
+                            <td>
+                                {transaction.relatedProductId ?
+                                    (products.find(p => p._id === transaction.relatedProductId)?.title || 'Ürün Bulunamadı')
+                                    : '-'}
+                            </td>
+                            <td>{transaction.createdBy}</td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+                    ))}
+                </tbody>
+            </table>
+        )}
+
       </div>
     </div>
   );

@@ -23,6 +23,8 @@ interface AppContextType {
   addToCart: (product: ProductProps) => void;
   removeFromCart: (productId: string) => void;
   updateItemQuantity: (productId: string, newQuantity: number) => void;
+  removeFromCart: (productId: string) => void;
+  updateItemQuantity: (productId: string, newQuantity: number) => void;
   clearCart: () => void;
   translate: (key: string) => string;
   translateCustom: (turkishText: string, englishText: string) => string;
@@ -83,8 +85,11 @@ interface AppContextType {
   setLanguage: (lang: 'tr' | 'en') => void;
 
   setProducts: (products: ProductProps[]) => void;
+
+  setProducts: (products: ProductProps[]) => void;
 }
 
+// AppContext'i oluşturun
 // AppContext'i oluşturun
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -866,10 +871,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [language]);
 
   return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
+  return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
 };
 
 export const useAppContext = (): AppContextType => {
   const context = useContext(AppContext);
+  if (!context) {
   if (!context) {
     throw new Error('useAppContext must be used within an AppProvider');
   }

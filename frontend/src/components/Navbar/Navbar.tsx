@@ -1,10 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import './Navbar.css';
 import Cart from '../Cart/Cart';
+import Cart from '../Cart/Cart';
 
 interface NavbarProps {
+  onCartClick?: () => void;
+  cartItemCount?: number;
+  onFavoritesClick?: () => void;
+  favoritesCount?: number;
+  onSearch?: (term: string) => void;
   onCartClick?: () => void;
   cartItemCount?: number;
   onFavoritesClick?: () => void;
@@ -123,7 +131,17 @@ const Navbar: React.FC<NavbarProps> = ({
     <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
       <div className="container-fluid">
         <Link className="navbar-brand" to="/">Stok Kontrol</Link>
+    <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+      <div className="container-fluid">
+        <Link className="navbar-brand" to="/">Stok Kontrol</Link>
 
+        <button 
+          className="navbar-toggler" 
+          type="button" 
+          onClick={toggleMenu}
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
         <button 
           className="navbar-toggler" 
           type="button" 
@@ -227,7 +245,34 @@ const Navbar: React.FC<NavbarProps> = ({
                   <button 
                     className={`dropdown-item ${language === 'en' ? 'active' : ''}`}
                     onClick={() => handleLanguageChange('en')}
+            )}
+
+            <li 
+              className={`nav-item dropdown ${isLangDropdownOpen ? 'show' : ''}`}
+              ref={langDropdownRef}
+            >
+              <a 
+                className="nav-link dropdown-toggle" 
+                href="#" 
+                onClick={toggleLangDropdown}
+              >
+                {language === 'tr' ? 'TR' : 'EN'}
+              </a>
+              <ul className={`dropdown-menu ${isLangDropdownOpen ? 'show' : ''}`}>
+                <li>
+                  <button 
+                    className={`dropdown-item ${language === 'tr' ? 'active' : ''}`}
+                    onClick={() => handleLanguageChange('tr')}
                   >
+                    Türkçe
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    className={`dropdown-item ${language === 'en' ? 'active' : ''}`}
+                    onClick={() => handleLanguageChange('en')}
+                  >
+                    English
                     English
                   </button>
                 </li>
@@ -282,6 +327,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     className="dropdown-item" 
                     onClick={handleLogout}
                   >
+                    {translate('logout')}
                     {translate('logout')}
                   </button>
                 </div>

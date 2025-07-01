@@ -1,3 +1,4 @@
+/* Ana Kart Konteyneri */
 .product-card {
   border: 1px solid #edf2f7;
   background-color: white;
@@ -16,6 +17,8 @@
 }
 
 .product-image-container {
+  width: 100%;
+  padding-top: 100%; /* 1:1 en-boy oranı için */
   position: relative;
   width: 100%;
   height: 220px;
@@ -268,139 +271,139 @@
 /* Favorite button styling */
 .favorite-button {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: rgba(255, 255, 255, 0.7);
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 10;
-}
-
-.favorite-button:hover {
-  background-color: rgba(255, 255, 255, 0.9);
-  transform: scale(1.1);
-}
-
-.favorite-button i {
-  color: #dc3545;
-  font-size: 1.2rem;
-}
-
-.favorite-button.favorited {
-  background-color: rgba(220, 53, 69, 0.1);
-}
-
-/* Share Modal Styles */
-.share-modal-overlay {
-  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  object-fit: cover; /* Resmin tamamını kaplamasını sağlar */
+}
+
+/* Ürün Bilgileri Alanı */
+.product-info {
+  padding: 16px;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1050;
+  flex-direction: column;
+  flex-grow: 1; /* Bu alanın kalan boşluğu doldurmasını sağlar */
 }
 
-.share-modal-content {
-  background-color: white;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  animation: fade-in 0.3s ease;
+/* Kategori ve Puanlama */
+.category-badge {
+  margin-bottom: 8px;
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.share-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-}
-
-.share-modal-header h5 {
-  margin: 0;
-  font-weight: 600;
-}
-
-.share-modal-body {
-  padding: 1rem;
-}
-
-.product-share-preview {
+.product-rating {
   display: flex;
   align-items: center;
-  padding: 10px;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-}
-
-.share-product-image {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  margin-right: 15px;
-}
-
-.share-product-info h6 {
-  margin: 0 0 5px;
+  gap: 4px;
   font-size: 0.9rem;
-  font-weight: 600;
+  color: #666;
+  margin-bottom: 8px;
 }
 
-.share-product-price {
-  color: #dc3545;
-  font-weight: 700;
-  margin: 0;
+.product-stars {
+  color: #ffc107;
 }
 
-.share-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 1rem;
-}
-
-.share-buttons button {
-  flex: 1 0 calc(50% - 10px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-}
-
-.share-buttons button i {
+/* Ürün Başlığı ve Açıklaması */
+.product-title {
   font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #333;
+  line-height: 1.3;
 }
 
-@media (max-width: 480px) {
-  .share-buttons button {
-    flex: 1 0 100%;
-  }
+.product-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 12px;
+  flex-grow: 1; /* Açıklamanın esnek büyümesini sağlar */
+  line-height: 1.5;
+}
+
+/* Fiyat ve Stok Durumu */
+.product-price {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #007bff;
+  margin-bottom: 12px;
+}
+
+.product-footer {
+  margin-bottom: 16px;
+}
+
+/* Aksiyon Butonları */
+.product-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* İki sütunlu yapı */
+  gap: 8px; /* Butonlar arası boşluk */
+  margin-bottom: 12px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  font-size: 0.9rem;
+}
+
+.action-btn:hover {
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.add-to-cart-btn {
+  grid-column: 1 / -1; /* Sepete ekle butonu tam genişlik kaplar */
+  background-color: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+  color: #fff;
+}
+
+.favorite-btn.active {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+/* Yorumlar Bölümü */
+.reviews-section {
+  margin-top: auto; /* Bu bölümü kartın en altına iter */
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+
+.reviews-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border: none;
+  background: none;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.reviews-btn:hover {
+  color: #007bff;
 }

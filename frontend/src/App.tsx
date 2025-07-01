@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import HomePage from './components/Home/HomePage';
@@ -57,6 +58,17 @@ const AppRoutes: React.FC = () => {
 
 const App: React.FC = () => {
   return (
+    <ErrorBoundary>
+      <AppProvider>
+        <div className="app-container">
+          <Navbar />
+          <main className="main-content">
+            <AppRoutes />
+          </main>
+          <Footer />
+        </div>
+      </AppProvider>
+    </ErrorBoundary>
     <ErrorBoundary>
       <AppProvider>
         <div className="app-container">

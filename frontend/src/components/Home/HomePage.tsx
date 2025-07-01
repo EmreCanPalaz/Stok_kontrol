@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
@@ -17,7 +19,17 @@ const HomePage: React.FC = () => {
   };
 
   // Initialize AOS animation library
+  // Initialize AOS animation library
   useEffect(() => {
+    AOS.init({
+      duration: 1000,
+      once: false,
+      mirror: true,
+    });
+    
+    // Cleanup
+    return () => {
+      AOS.refresh();
     AOS.init({
       duration: 1000,
       once: false,
@@ -30,6 +42,7 @@ const HomePage: React.FC = () => {
     };
   }, []);
 
+  // Set loaded state after component mounts
   // Set loaded state after component mounts
   useEffect(() => {
     setIsLoaded(true);
@@ -120,7 +133,28 @@ const HomePage: React.FC = () => {
             >
               <div className="feature-icon">
                 <i className={feature.icon}></i>
+      <div className="features-section">
+        <h2 className="section-title" data-aos="fade-up">
+          <span className="highlight">{translate('features')}</span>
+        </h2>
+        <div className="features-grid">
+          {features.map((feature, index) => (
+            <div 
+              key={index}
+              className={`feature-card ${activeFeature === index ? 'active' : ''}`}
+              data-aos="zoom-in"
+              data-aos-delay={100 * index}
+              onMouseEnter={() => setActiveFeature(index)}
+              onMouseLeave={() => setActiveFeature(null)}
+            >
+              <div className="feature-icon">
+                <i className={feature.icon}></i>
               </div>
+              <h3 className="feature-title">{feature.title}</h3>
+              <p className="feature-description">
+                {feature.description}
+              </p>
+              <div className="feature-hover-effect"></div>
               <h3 className="feature-title">{feature.title}</h3>
               <p className="feature-description">
                 {feature.description}
@@ -128,9 +162,32 @@ const HomePage: React.FC = () => {
               <div className="feature-hover-effect"></div>
             </div>
           ))}
+          ))}
         </div>
       </div>
+      </div>
 
+      <div className="how-it-works-section" data-aos="fade-up">
+        <h2 className="section-title">
+          <span className="highlight">{translate('howItWorks')}</span>
+        </h2>
+        <div className="steps-container">
+          {steps.map((step, index) => (
+            <div 
+              key={index} 
+              className="step-item"
+              data-aos="fade-right"
+              data-aos-delay={150 * index}
+            >
+              <div className="step-number">{step.number}</div>
+              <h3 className="step-title">{step.title}</h3>
+              <p className="step-description">
+                {step.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="how-it-works-section" data-aos="fade-up">
         <h2 className="section-title">
           <span className="highlight">{translate('howItWorks')}</span>

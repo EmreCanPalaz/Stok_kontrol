@@ -1,75 +1,73 @@
 import React from 'react';
 import { useAppContext } from '../../context/AppContext';
 import './Cart.css';
+import { CartItem } from '../../types/product';
 
 interface CartProps {
   onClose: () => void;
 }
 
 const Cart: React.FC<CartProps> = ({ onClose }) => {
-  const { cartItems, cartTotal, removeFromCart, updateItemQuantity } = useAppContext();
+  const { cartItems, cartTotal, removeFromCart, updateItemQuantity, clearCart, translate } = useAppContext();
 
-  if (cartItems.length === 0) {
-    return (
-      <div className="cart-overlay">
-        <div className="cart-container">
-          <div className="cart-header">
-            <h5>Your Cart</h5>
-            <button className="close-button" onClick={onClose}>×</button>
-          </div>
-          <div className="cart-empty">
-            <p>Your cart is empty</p>
-            <button className="btn btn-primary" onClick={onClose}>Continue Shopping</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleRemoveItem = (productId: string) => {
+    removeFromCart(productId);
+  };
+
+  const handleUpdateQuantity = (productId: string, newQuantity: number) => {
+    updateItemQuantity(productId, newQuantity);
+  };
+
+  const handleClearCart = () => {
+    if (window.confirm('Sepetinizi tamamen boşaltmak istediğinize emin misiniz?')) {
+      clearCart();
+    }
+  };
 
   return (
     <div className="cart-overlay">
-      <div className="cart-container">
+      <div className="cart-sidebar">
         <div className="cart-header">
-          <h5>Your Cart</h5>
+          <h5>{translate('cart')}</h5>
           <button className="close-button" onClick={onClose}>×</button>
         </div>
         <div className="cart-items">
-          {cartItems.map(item => (
-            <div key={item.id} className="cart-item">
-              <img src={item.image} alt={item.title} className="cart-item-image" />
-              <div className="cart-item-details">
-                <h6>{item.title}</h6>
-                <p>${item.price.toFixed(2)}</p>
-                <div className="quantity-control">
-                  <button 
-                    onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
-                    className="btn btn-sm btn-outline-secondary"
-                  >-</button>
-                  <span className="quantity">{item.quantity}</span>
-                  <button 
-                    onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
-                    className="btn btn-sm btn-outline-secondary"
-                  >+</button>
+          {cartItems.length === 0 ? (
+            <p>Sepetiniz boş.</p>
+          ) : (
+            cartItems.map(item => (
+              <div key={item._id} className="cart-item">
+                <img src={item.image} alt={item.title} className="cart-item-image" />
+                <div className="cart-item-details">
+                  <h6>{item.title}</h6>
+                  <p>{item.price.toFixed(2)} TL</p>
+                  <div className="quantity-control">
+                    <button
+                      onClick={() => handleUpdateQuantity(item._id, item.quantity - 1)}
+                      className="btn btn-sm btn-outline-secondary"
+                      disabled={item.quantity <= 1}
+                    >-</button>
+                    <span className="quantity">{item.quantity}</span>
+                    <button
+                      onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
+                      className="btn btn-sm btn-outline-secondary"
+                    >+</button>
+                  </div>
                 </div>
+                <button
+                  onClick={() => handleRemoveItem(item._id)}
+                  className="remove-button"
+                >×</button>
               </div>
-              <button 
-                onClick={() => removeFromCart(item.id)}
-                className="remove-button"
-              >×</button>
-            </div>
-          ))}
+            ))
+          )}
         </div>
         <div className="cart-footer">
-          <div className="cart-total">
-            <span>Total:</span>
-            <span>${cartTotal.toFixed(2)}</span>
-          </div>
-          <div className="cart-actions">
-            <button className="btn btn-primary">Checkout</button>
-            <button className="btn btn-outline-secondary" onClick={onClose}>
-              Continue Shopping
-            </button>
-          </div>
+          <h5>Toplam: {cartTotal.toFixed(2)} TL</h5>
+          <button className="btn btn-primary btn-block" onClick={() => {
+            alert('Ödeme sayfasına yönlendiriliyor...');
+          }} disabled={cartItems.length === 0}>Ödemeye Geç</button>
+          <button className="btn btn-danger btn-sm mt-2" onClick={handleClearCart} disabled={cartItems.length === 0}>Sepeti Boşalt</button>
         </div>
       </div>
     </div>

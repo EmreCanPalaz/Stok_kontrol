@@ -1,97 +1,246 @@
 import React, { useState, useEffect } from 'react';
-import ProductCard, { ProductProps } from './ProductCard';
+import { Link, useLocation } from 'react-router-dom';
+import { ProductProps } from '../../types/product';
+import { useAppContext } from '../../context/AppContext';
+import ProductFilters from './ProductFilters';
+import ProductSort from './ProductSort';
+import BarcodeScanner from '../Admin/BarcodeScanner';
+import ProductCard from './ProductCard'; // ProductCard bileşenini import et
 import './ProductList.css';
-
-
-const sampleProducts: ProductProps[] = [
-  {
-    id: 1,
-    title: "Fjallraven - Foldsack No. 1 Backpack",
-    price: 109.95,
-    description: "Your perfect pack for everyday use and walks in the forest. Stash your laptop (up to 15 inches) in the padded sleeve, your everyday",
-    category: "men's clothing",
-    image: "https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg",
-    stock: 25
-  },
-  {
-    id: 2,
-    title: "Mens Casual Premium Slim Fit T-Shirts",
-    price: 22.3,
-    description: "Slim-fitting style, contrast raglan long sleeve, three-button henley placket, light weight & soft fabric for breathable and comfortable wearing.",
-    category: "men's clothing",
-    image: "https://fakestoreapi.com/img/71-3HjGNDUL._AC_SY879._SX._UX._SY._UY_.jpg",
-    stock: 8
-  },
-  {
-    id: 3,
-    title: "Women's 3-in-1 Snowboard Jacket",
-    price: 56.99,
-    description: "Note:The Jackets is US standard size, Please choose size as your usual wear. Material: 100% Polyester; Detachable Liner Fabric: Warm Fleece.",
-    category: "women's clothing",
-    image: "https://fakestoreapi.com/img/51Y5NI-I5jL._AC_UX679_.jpg",
-    stock: 15
-  },
-  {
-    id: 4,
-    title: "WD 2TB Elements Portable External Hard Drive",
-    price: 64,
-    description: "USB 3.0 and USB 2.0 Compatibility Fast data transfers Improve PC Performance High Capacity; Compatibility Formatted NTFS for Windows 10",
-    category: "electronics",
-    image: "https://fakestoreapi.com/img/61IBBVJvSDL._AC_SY879_.jpg",
-    stock: 3
-  },
-  {
-    id: 5,
-    title: "Samsung 49-Inch CHG90 144Hz Curved Gaming Monitor",
-    price: 999.99,
-    description: "49 INCH SUPER ULTRAWIDE 32:9 CURVED GAMING MONITOR with dual 27 inch screen side by side QUANTUM DOT (QLED) TECHNOLOGY",
-    category: "electronics",
-    image: "https://fakestoreapi.com/img/81Zt42ioCgL._AC_SX679_.jpg",
-    stock: 10
-  },
-  {
-    id: 6,
-    title: "Solid Gold Petite Micropave Diamond Bracelet",
-    price: 168,
-    description: "Satisfaction Guaranteed. Return or exchange any order within 30 days. Designed and sold by Hafeez Center in the United States.",
-    category: "jewelery",
-    image: "https://fakestoreapi.com/img/71YAIFU48IL._AC_UL640_QL65_ML3_.jpg",
-    stock: 0
-  }
-
-];
-
 
 interface ProductListProps {
   products?: ProductProps[];
-  onAddToCart: (product: ProductProps) => void;
+  onAddToCart?: (product: ProductProps) => void;
 }
 
+const ProductList: React.FC<ProductListProps> = ({ 
+  products: propProducts, 
+  onAddToCart: propOnAddToCart 
+}) => {
+  const { products: contextProducts, addToCart } = useAppContext();
+  
+  // URL'den arama parametresini al
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const searchFromUrl = searchParams.get('search') || '';
+  
+  // Props'tan gelen değerler varsa onları kullan, yoksa context'ten al
+  const finalProducts = propProducts || contextProducts;
+  const handleAddToCart = propOnAddToCart || addToCart;
 
-const ProductList: React.FC<ProductListProps> = ({ products: propProducts, onAddToCart }) => {
+  // Arama terimi için state
+  const [searchTerm, setSearchTerm] = useState(searchFromUrl);
 
-  const [products, setProducts] = useState<ProductProps[]>(propProducts || []);
+  // Filtrelenmiş ürünler için state
+  const [filteredProducts, setFilteredProducts] = useState<ProductProps[]>(finalProducts || []);
+  
+  // Sıralanmış ürünler için state
+  const [sortedProducts, setSortedProducts] = useState<ProductProps[]>(filteredProducts || []);
+  
+  // Barkod tarayıcı için state
+  const [showScanner, setShowScanner] = useState(false);
+  const [scannerError, setScannerError] = useState<string | null>(null);
 
-  // Update products when propProducts changes
+  // Görünüm modu için state
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid'); // Varsayılan olarak grid görünümü
+
+  // URL'den gelen arama parametresi değiştiğinde arama terimini güncelle
   useEffect(() => {
-    if (propProducts) {
-      setProducts(propProducts);
+    if (searchFromUrl) {
+      setSearchTerm(searchFromUrl);
     }
-  }, [propProducts]);
+  }, [searchFromUrl]);
+
+  // Products değiştiğinde filteredProducts'ı güncelle
+  useEffect(() => {
+    setFilteredProducts(finalProducts || []);
+  }, [finalProducts]);
+
+  // Filtreleme işlemi
+  const handleFilterChange = (newFilteredProducts: ProductProps[]) => {
+    setFilteredProducts(newFilteredProducts);
+  };
+  
+  // Sıralama işlemi
+  const handleSortChange = (newSortedProducts: ProductProps[]) => {
+    setSortedProducts(newSortedProducts);
+  };
+  
+  // Filtreleme değiştiğinde sıralamayı güncelle
+  useEffect(() => {
+    setSortedProducts(filteredProducts || []);
+  }, [filteredProducts]);
+
+  // Barkod tarama işlemleri
+  const handleOpenScanner = () => {
+    setShowScanner(true);
+    setScannerError(null);
+  };
+
+  const handleCloseScanner = () => {
+    setShowScanner(false);
+  };
+
+  const handleProductFound = (scannedProduct: ProductProps) => {
+    // Taranan barkoda sahip ürünü bul
+    const foundProduct = finalProducts.find(p => p._id === scannedProduct._id);
+    
+    if (foundProduct) {
+      // Ürün bulunduğunda, sadece o ürünü göster
+      setFilteredProducts([foundProduct]);
+      setSortedProducts([foundProduct]);
+    } else {
+      // Ürün bulunamadığında hata mesajı göster
+      setScannerError(`Barkod (${scannedProduct._id}) ile eşleşen ürün bulunamadı.`);
+      setTimeout(() => setScannerError(null), 5000); // 5 saniye sonra hata mesajını kaldır
+    }
+  };
+
+  const handleScanError = (error: Error) => {
+    setScannerError(`Tarama hatası: ${error.message}`);
+    setTimeout(() => setScannerError(null), 5000); // 5 saniye sonra hata mesajını kaldır
+  };
+
+  // Arama işlevselliği
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newSearchTerm = event.target.value;
+    setSearchTerm(newSearchTerm);
+    const filteredProducts = finalProducts.filter(product => {
+      return product.title.toLowerCase().includes(newSearchTerm.toLowerCase());
+    });
+    setFilteredProducts(filteredProducts);
+  };
+
+  if (!finalProducts || finalProducts.length === 0) {
+    return <div className="empty-products">Ürün bulunamadı.</div>;
+  }
 
   return (
-    <div className="product-list">
-      <div className="product-grid">
-        {products.map(product => (
-          <ProductCard
-            key={product.id}
-            {...product}
-            onAddToCart={() => onAddToCart(product)}
+    <div className="products-container">
+      <div className="filters-sidebar">
+        <ProductFilters 
+          products={finalProducts} 
+          onFilterChange={handleFilterChange} 
+        />
+        
+        {/* Arama kutusu */}
+        <div className="search-box">
+          <input 
+            type="text" 
+            value={searchTerm} 
+            onChange={handleSearch} 
+            placeholder="Ürün ara..."
           />
-        ))}
+        </div>
+        
+        {/* Barkod Tarama Butonu */}
+        <div className="barcode-scan-section">
+          <button 
+            className="barcode-scan-btn"
+            onClick={handleOpenScanner}
+          >
+            <i className="bi bi-upc-scan"></i> Barkod/QR Kod Tara
+          </button>
+        </div>
       </div>
+      <div className="product-list">
+        <h2>Ürünler</h2>
+        
+        {/* Hata mesajı */}
+        {scannerError && (
+          <div className="alert alert-danger">
+            {scannerError}
+          </div>
+        )}
+        
+        <div className="product-list-header">
+          <p>{filteredProducts.length} ürün bulundu</p>
+          <div className="product-list-actions">
+            <ProductSort 
+              products={filteredProducts}
+              onSortChange={handleSortChange}
+            />
+            <div className="view-toggle">
+              <button 
+                className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                aria-label="Grid görünümü"
+              >
+                <i className="bi bi-grid-3x3-gap"></i>
+              </button>
+              <button 
+                className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
+                onClick={() => setViewMode('table')}
+                aria-label="Tablo görünümü"
+              >
+                <i className="bi bi-table"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {viewMode === 'table' ? (
+          <div className="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ürün Adı</th>
+                  <th>Fiyat</th>
+                  <th>Stok</th>
+                  <th>İşlemler</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.isArray(sortedProducts) ? sortedProducts.map((product, index) => (
+                  <tr key={index}>
+                    <td>
+                      <Link to={`/products/${product._id}`}>
+                        {product.title}
+                      </Link>
+                    </td>
+                    <td>{product.price !== undefined ? `${Number(product.price).toFixed(2)} TL` : '0.00 TL'}</td>
+                    <td>{product.stock}</td>
+                    <td>
+                      <button 
+                        onClick={() => handleAddToCart(product)}
+                        disabled={product.stock <= 0}
+                        className="add-to-cart-btn"
+                      >
+                        Sepete Ekle
+                      </button>
+                    </td>
+                  </tr>
+                )) : <tr><td colSpan={4}>Ürün bulunamadı</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="product-grid">
+            {Array.isArray(sortedProducts) ? sortedProducts.map((product) => (
+              <ProductCard 
+                key={product._id}
+                {...product}
+                onAddToCart={() => handleAddToCart(product)}
+              />
+            )) : <div className="empty-products">Ürün bulunamadı</div>}
+          </div>
+        )}
+      </div>
+      
+      {/* Barkod Tarayıcı Modal */}
+      {showScanner && (
+        <div className="scanner-modal">
+          <div className="scanner-modal-content">
+            <BarcodeScanner 
+              onProductFound={handleProductFound}
+              onScanError={handleScanError}
+              onClose={handleCloseScanner}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default ProductList;
+export default React.memo(ProductList);

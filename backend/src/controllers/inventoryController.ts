@@ -1,7 +1,11 @@
 import { Request, Response } from 'express';
 import InventoryTransaction from '../models/Inventory';
 import Product from '../models/Product';
+<<<<<<< HEAD
 
+=======
+import { AuthRequest } from '../middleware/auth';
+>>>>>>> e0c8134 (third one commit)
 
 // Get all inventory transactions
 export const getInventoryTransactions = async (req: Request, res: Response): Promise<void> => {
@@ -53,7 +57,11 @@ export const getInventoryTransactionById = async (req: Request, res: Response): 
 };
 
 // Create manual inventory transaction
+<<<<<<< HEAD
 export const createInventoryTransaction = async ( res: Response): Promise<void> => {
+=======
+export const createInventoryTransaction = async (req: AuthRequest, res: Response): Promise<void> => {
+>>>>>>> e0c8134 (third one commit)
   try {
     const { productId, type, quantity, reason, notes } = req.body;
 
@@ -87,8 +95,15 @@ export const createInventoryTransaction = async ( res: Response): Promise<void> 
     }
 
     // Kullanıcı ID kontrolü
+<<<<<<< HEAD
    
     
+=======
+    if (!req.user || !req.user.userId) {
+      res.status(401).json({ message: 'User authentication required' });
+      return;
+    }
+>>>>>>> e0c8134 (third one commit)
 
     // Yeni ve önceki stok değerlerini hesapla
     const previousStock = product.stock;
@@ -100,6 +115,10 @@ export const createInventoryTransaction = async ( res: Response): Promise<void> 
       quantity,
       reason,
       notes,
+<<<<<<< HEAD
+=======
+      createdBy: req.user.userId,
+>>>>>>> e0c8134 (third one commit)
       previousStock: previousStock,
       newStock: newStock
     });

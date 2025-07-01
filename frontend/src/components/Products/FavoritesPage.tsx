@@ -1,6 +1,10 @@
 import React from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { ProductProps } from '../../types/product';
+<<<<<<< HEAD
+=======
+import { useAuth } from '../../context/AuthContext';
+>>>>>>> e0c8134 (third one commit)
 import { Link } from 'react-router-dom';
 
 const FavoritesPage: React.FC = () => {

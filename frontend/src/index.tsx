@@ -10,7 +10,11 @@ import './styles/colors.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
+<<<<<<< HEAD
 
+=======
+import { AuthProvider } from './context/AuthContext';
+>>>>>>> e0c8134 (third one commit)
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -18,9 +22,15 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <BrowserRouter>
+<<<<<<< HEAD
       
         <App />
       
+=======
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+>>>>>>> e0c8134 (third one commit)
     </BrowserRouter>
   </React.StrictMode>
 );

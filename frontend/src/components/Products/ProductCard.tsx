@@ -17,6 +17,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   stock,
   onAddToCart,
   category
+<<<<<<< HEAD
   _id,
   title,
   price,
@@ -25,22 +26,28 @@ const ProductCard: React.FC<ProductCardProps> = ({
   stock,
   onAddToCart,
   category
+=======
+>>>>>>> e0c8134 (third one commit)
 }) => {
   const { isFavorite, addToFavorites, removeFromFavorites, getAverageRating, getReviewsByProduct, user } = useAppContext();
 
   const productId = _id;
   const productIsFavorite = isFavorite(productId);
   const averageRating = getAverageRating(productId);
+<<<<<<< HEAD
   const { isFavorite, addToFavorites, removeFromFavorites, getAverageRating, getReviewsByProduct, user } = useAppContext();
 
   const productId = _id;
   const productIsFavorite = isFavorite(productId);
   const averageRating = getAverageRating(productId);
+=======
+>>>>>>> e0c8134 (third one commit)
   const [showReviewModal, setShowReviewModal] = useState(false);
 
   const handleToggleFavorite = () => {
     if (productIsFavorite) {
       removeFromFavorites(productId);
+<<<<<<< HEAD
 
   const handleToggleFavorite = () => {
     if (productIsFavorite) {
@@ -48,19 +55,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
     } else {
       addToFavorites({ _id: productId, title, price, description, category, image, stock, sku: productId });
       addToFavorites({ _id: productId, title, price, description, category, image, stock, sku: productId });
+=======
+    } else {
+      addToFavorites({ _id: productId, title, price, description, category, image, stock, sku: productId });
+>>>>>>> e0c8134 (third one commit)
     }
   };
 
   const handleAddToCartClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     onAddToCart({ _id: productId, title, price, description, category, image, stock, sku: productId });
 
+<<<<<<< HEAD
   const handleAddToCartClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     onAddToCart({ _id: productId, title, price, description, category, image, stock, sku: productId });
 
+=======
+>>>>>>> e0c8134 (third one commit)
     const button = e.currentTarget as HTMLButtonElement;
     const originalText = button.innerHTML;
     const originalClass = button.className;
 
+<<<<<<< HEAD
     const originalText = button.innerHTML;
     const originalClass = button.className;
 
@@ -69,25 +84,39 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
     button.className = 'add-to-cart-btn';
 
+=======
+    button.innerHTML = '<i class="bi bi-check"></i> Eklendi!';
+    button.className = 'add-to-cart-btn';
+
+>>>>>>> e0c8134 (third one commit)
     setTimeout(() => {
       button.innerHTML = originalText;
       button.className = originalClass;
     }, 1000);
+<<<<<<< HEAD
       button.innerHTML = originalText;
       button.className = originalClass;
     }, 1000);
+=======
+>>>>>>> e0c8134 (third one commit)
   };
 
   const handleOpenReviewModal = () => {
     setShowReviewModal(true);
+<<<<<<< HEAD
   const handleOpenReviewModal = () => {
     setShowReviewModal(true);
+=======
+>>>>>>> e0c8134 (third one commit)
   };
 
   const handleCloseReviewModal = () => {
     setShowReviewModal(false);
+<<<<<<< HEAD
   const handleCloseReviewModal = () => {
     setShowReviewModal(false);
+=======
+>>>>>>> e0c8134 (third one commit)
   };
 
   // Ürün detay sayfasına yönlendirme
@@ -95,6 +124,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     window.location.href = `/products/${productId}#reviews`;
   };
 
+<<<<<<< HEAD
   // Stok durumuna göre rozet rengi belirleme
   const getStockBadgeClass = () => {
     if (stock <= 0) return "badge bg-danger";
@@ -111,18 +141,61 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   // Yıldız puanlama gösterimi
   const renderStars = () => {
+=======
+  // YENİ EKLENEN PAYLAŞIM FONKSİYONU
+  const handleShare = () => {
+    const productUrl = `${window.location.origin}/products/${productId}`;
+    if (navigator.share) {
+      navigator.share({
+        title: title,
+        text: `Şu ürüne bir göz at: ${title}`,
+        url: productUrl,
+      })
+      .then(() => console.log('Başarılı paylaşım'))
+      .catch((error) => console.log('Paylaşım hatası', error));
+    } else {
+      navigator.clipboard.writeText(productUrl)
+        .then(() => {
+          alert('Ürün linki panoya kopyalandı!');
+        })
+        .catch(err => {
+          console.error('Metin kopyalanamadı: ', err);
+          alert('Link kopyalanamadı.');
+        });
+    }
+  };
+
+  // Stok durumuna göre rozet rengi belirleme
+  const getStockBadgeClass = () => {
+    if (stock <= 0) return "badge bg-danger";
+    if (stock < 10) return "badge bg-warning";
+    return "badge bg-success";
+  };
+
+  // Stok durumuna göre metin belirleme
+  const getStockText = () => {
+    if (stock <= 0) return "Stokta Yok";
+    if (stock < 10) return `Son ${stock} Ürün`;
+    return "Stokta Var";
+  };
+
+>>>>>>> e0c8134 (third one commit)
   // Yıldız puanlama gösterimi
   const renderStars = () => {
     const stars = [];
     const rating = Math.round(averageRating * 2) / 2; // En yakın 0.5'e yuvarla
     
+<<<<<<< HEAD
     const rating = Math.round(averageRating * 2) / 2; // En yakın 0.5'e yuvarla
     
+=======
+>>>>>>> e0c8134 (third one commit)
     for (let i = 1; i <= 5; i++) {
       if (i <= rating) {
         stars.push(<i key={i} className="bi bi-star-fill"></i>);
       } else if (i - 0.5 === rating) {
         stars.push(<i key={i} className="bi bi-star-half"></i>);
+<<<<<<< HEAD
       if (i <= rating) {
         stars.push(<i key={i} className="bi bi-star-fill"></i>);
       } else if (i - 0.5 === rating) {
@@ -130,12 +203,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
       } else {
         stars.push(<i key={i} className="bi bi-star"></i>);
         stars.push(<i key={i} className="bi bi-star"></i>);
+=======
+      } else {
+        stars.push(<i key={i} className="bi bi-star"></i>);
+>>>>>>> e0c8134 (third one commit)
       }
     }
     
     return stars;
+<<<<<<< HEAD
     
     return stars;
+=======
+>>>>>>> e0c8134 (third one commit)
   };
 
   return (
@@ -155,6 +235,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <div className="product-rating">
             <div className="product-stars">
               {renderStars()}
+<<<<<<< HEAD
     <div className="product-card">
       <div className="product-image-container">
         <img src={image} alt={title} className="product-image" />
@@ -174,6 +255,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
             </div>
             <span className="rating-text">({getReviewsByProduct(productId).length})</span>
             <span className="rating-text">({getReviewsByProduct(productId).length})</span>
+=======
+            </div>
+            <span className="rating-text">({getReviewsByProduct(productId).length})</span>
+>>>>>>> e0c8134 (third one commit)
           </div>
         )}
         
@@ -209,6 +294,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
           >
             <i className={`bi bi-heart${productIsFavorite ? '-fill' : ''}`}></i>
             <span>{productIsFavorite ? 'Favorilerde' : 'Favorilere Ekle'}</span>
+<<<<<<< HEAD
+=======
+          </button>
+
+          {/* YENİ EKLENEN PAYLAŞIM BUTONU */}
+          <button
+            onClick={handleShare}
+            className="action-btn share-btn"
+          >
+            <i className="bi bi-share"></i>
+            <span>Paylaş</span>
+>>>>>>> e0c8134 (third one commit)
           </button>
         </div>
         
@@ -234,5 +331,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   );
 };
 
+<<<<<<< HEAD
 export default ProductCard;
+=======
+>>>>>>> e0c8134 (third one commit)
 export default ProductCard;

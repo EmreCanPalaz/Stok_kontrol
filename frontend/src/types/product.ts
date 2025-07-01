@@ -1,7 +1,17 @@
 // Bu dosya, uygulamanızdaki veri modellerinin tek, canonical (doğru) tip tanımlarını içerir.
 // AppContext ve diğer tüm componentler bu tipleri kullanmalıdır.
 
+<<<<<<< HEAD
 
+=======
+export interface UserData {
+  _id: string; // Backend'den gelen ID (string)
+  username: string;
+  email: string;
+  role: 'user' | 'admin' | 'stock_manager'; // Kullanıcı rolü
+  // Diğer kullanıcı özellikleri eklenebilir
+}
+>>>>>>> e0c8134 (third one commit)
 
 export interface ProductProps {
   _id: string; // Backend'den gelen ID (string)
@@ -12,6 +22,10 @@ export interface ProductProps {
   category?: string;
   stock: number;
   sku: string; // Stok Kodu (Stock Keeping Unit) - Backend tarafından zorunlu
+<<<<<<< HEAD
+=======
+  imageUrl?: string; // Add this line
+>>>>>>> e0c8134 (third one commit)
   // Diğer ürün özellikleri eklenebilir (örn: barcode, lowStockThreshold)
 }
 

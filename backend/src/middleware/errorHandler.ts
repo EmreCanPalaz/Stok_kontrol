@@ -5,8 +5,13 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
   let error = { ...err };
   error.message = err.message;
 
+<<<<<<< HEAD
 
   
+=======
+  // Log error
+  console.error(err);
+>>>>>>> e0c8134 (third one commit)
 
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {

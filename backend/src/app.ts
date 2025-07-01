@@ -7,12 +7,21 @@ import connectDB from './config/database';
 import { errorHandler } from './middleware/errorHandler';
 
 // Import routes
+<<<<<<< HEAD
 
 import productRoutes from './routes/products';
 import stockRoutes from './routes/stock';
 
 import inventoryRoutes from './routes/inventory';
 
+=======
+import authRoutes from './routes/auth';
+import productRoutes from './routes/products';
+import stockRoutes from './routes/stock';
+import userRoutes from './routes/users';
+import inventoryRoutes from './routes/inventory';
+import feedbackRoutes from './routes/feedback';
+>>>>>>> e0c8134 (third one commit)
 import reviewsRoutes from './routes/reviews';
 
 const app = express();
@@ -43,12 +52,21 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API routes
+<<<<<<< HEAD
 
 app.use('/api/products', productRoutes);
 app.use('/api/stock', stockRoutes); 
 
 app.use('/api/inventory', inventoryRoutes);
 
+=======
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/stock', stockRoutes); 
+app.use('/api/users', userRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/feedback', feedbackRoutes);
+>>>>>>> e0c8134 (third one commit)
 app.use('/api/reviews', reviewsRoutes);
 
 // Doğrudan tanımlanan reviews rotası

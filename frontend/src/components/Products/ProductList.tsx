@@ -4,13 +4,20 @@ import { ProductProps } from '../../types/product';
 import { useAppContext } from '../../context/AppContext';
 import ProductFilters from './ProductFilters';
 import ProductSort from './ProductSort';
+<<<<<<< HEAD
+=======
+import BarcodeScanner from '../Admin/BarcodeScanner';
+>>>>>>> e0c8134 (third one commit)
 import ProductCard from './ProductCard'; // ProductCard bileşenini import et
 import './ProductList.css';
 
 interface ProductListProps {
   products?: ProductProps[];
   onAddToCart?: (product: ProductProps) => void;
+<<<<<<< HEAD
   onAddToCart?: (product: ProductProps) => void;
+=======
+>>>>>>> e0c8134 (third one commit)
 }
 
 const ProductList: React.FC<ProductListProps> = ({ 
@@ -45,6 +52,7 @@ const ProductList: React.FC<ProductListProps> = ({
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid'); // Varsayılan olarak grid görünümü
 
   // URL'den gelen arama parametresi değiştiğinde arama terimini güncelle
+<<<<<<< HEAD
 const ProductList: React.FC<ProductListProps> = ({ 
   products: propProducts, 
   onAddToCart: propOnAddToCart 
@@ -77,6 +85,8 @@ const ProductList: React.FC<ProductListProps> = ({
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid'); // Varsayılan olarak grid görünümü
 
   // URL'den gelen arama parametresi değiştiğinde arama terimini güncelle
+=======
+>>>>>>> e0c8134 (third one commit)
   useEffect(() => {
     if (searchFromUrl) {
       setSearchTerm(searchFromUrl);
@@ -146,6 +156,7 @@ const ProductList: React.FC<ProductListProps> = ({
   if (!finalProducts || finalProducts.length === 0) {
     return <div className="empty-products">Ürün bulunamadı.</div>;
   }
+<<<<<<< HEAD
     if (searchFromUrl) {
       setSearchTerm(searchFromUrl);
     }
@@ -214,6 +225,8 @@ const ProductList: React.FC<ProductListProps> = ({
   if (!finalProducts || finalProducts.length === 0) {
     return <div className="empty-products">Ürün bulunamadı.</div>;
   }
+=======
+>>>>>>> e0c8134 (third one commit)
 
   return (
     <div className="products-container">
@@ -325,6 +338,7 @@ const ProductList: React.FC<ProductListProps> = ({
             )) : <div className="empty-products">Ürün bulunamadı</div>}
           </div>
         )}
+<<<<<<< HEAD
     <div className="products-container">
       <div className="filters-sidebar">
         <ProductFilters 
@@ -434,6 +448,8 @@ const ProductList: React.FC<ProductListProps> = ({
             )) : <div className="empty-products">Ürün bulunamadı</div>}
           </div>
         )}
+=======
+>>>>>>> e0c8134 (third one commit)
       </div>
       
       {/* Barkod Tarayıcı Modal */}
@@ -448,6 +464,7 @@ const ProductList: React.FC<ProductListProps> = ({
           </div>
         </div>
       )}
+<<<<<<< HEAD
       
       {/* Barkod Tarayıcı Modal */}
       {showScanner && (
@@ -461,9 +478,14 @@ const ProductList: React.FC<ProductListProps> = ({
           </div>
         </div>
       )}
+=======
+>>>>>>> e0c8134 (third one commit)
     </div>
   );
 };
 
+<<<<<<< HEAD
 export default React.memo(ProductList);
+=======
+>>>>>>> e0c8134 (third one commit)
 export default React.memo(ProductList);

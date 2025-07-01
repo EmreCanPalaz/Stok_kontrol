@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+<<<<<<< HEAD
 import { useAppContext } from '../../context/AppContext';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -19,6 +20,25 @@ const HomePage: React.FC = () => {
   };
 
   // Initialize AOS animation library
+=======
+import { useAuth } from '../../context/AuthContext';
+import { useAppContext } from '../../context/AppContext';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+import './HomePage.css';
+
+const HomePage: React.FC = () => {
+  const { user } = useAuth();
+  const { translate, language } = useAppContext();
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [activeFeature, setActiveFeature] = useState<number | null>(null);
+
+  // Özel çeviri fonksiyonu
+  const translateCustom = (turkish: string, english: string) => {
+    return language === 'tr' ? turkish : english;
+  };
+
+>>>>>>> e0c8134 (third one commit)
   // Initialize AOS animation library
   useEffect(() => {
     AOS.init({
@@ -30,6 +50,7 @@ const HomePage: React.FC = () => {
     // Cleanup
     return () => {
       AOS.refresh();
+<<<<<<< HEAD
     AOS.init({
       duration: 1000,
       once: false,
@@ -39,11 +60,16 @@ const HomePage: React.FC = () => {
     // Cleanup
     return () => {
       AOS.refresh();
+=======
+>>>>>>> e0c8134 (third one commit)
     };
   }, []);
 
   // Set loaded state after component mounts
+<<<<<<< HEAD
   // Set loaded state after component mounts
+=======
+>>>>>>> e0c8134 (third one commit)
   useEffect(() => {
     setIsLoaded(true);
   }, []);
@@ -99,8 +125,25 @@ const HomePage: React.FC = () => {
         <p className="hero-subtitle" data-aos="fade-up" data-aos-delay="200">
           {translate('modernStockSolution')}
         </p>
+<<<<<<< HEAD
         
         (
+=======
+        {!user ? (
+          <div className="hero-buttons" data-aos="fade-up" data-aos-delay="400">
+            <Link to="/login" className="btn btn-primary btn-lg btn-with-icon">
+              <i className="bi bi-box-arrow-in-right"></i>
+              <span>{translate('login')}</span>
+              <div className="btn-hover-effect"></div>
+            </Link>
+            <Link to="/register" className="btn btn-outline btn-lg btn-with-icon">
+              <i className="bi bi-person-plus"></i>
+              <span>{translate('register')}</span>
+              <div className="btn-hover-effect"></div>
+            </Link>
+          </div>
+        ) : (
+>>>>>>> e0c8134 (third one commit)
           <div className="hero-buttons" data-aos="fade-up" data-aos-delay="400">
             <Link to="/products" className="btn btn-primary btn-lg btn-with-icon">
               <i className="bi bi-grid-3x3-gap"></i>
@@ -133,6 +176,7 @@ const HomePage: React.FC = () => {
             >
               <div className="feature-icon">
                 <i className={feature.icon}></i>
+<<<<<<< HEAD
       <div className="features-section">
         <h2 className="section-title" data-aos="fade-up">
           <span className="highlight">{translate('features')}</span>
@@ -149,12 +193,15 @@ const HomePage: React.FC = () => {
             >
               <div className="feature-icon">
                 <i className={feature.icon}></i>
+=======
+>>>>>>> e0c8134 (third one commit)
               </div>
               <h3 className="feature-title">{feature.title}</h3>
               <p className="feature-description">
                 {feature.description}
               </p>
               <div className="feature-hover-effect"></div>
+<<<<<<< HEAD
               <h3 className="feature-title">{feature.title}</h3>
               <p className="feature-description">
                 {feature.description}
@@ -166,6 +213,12 @@ const HomePage: React.FC = () => {
         </div>
       </div>
       </div>
+=======
+            </div>
+          ))}
+        </div>
+      </div>
+>>>>>>> e0c8134 (third one commit)
 
       <div className="how-it-works-section" data-aos="fade-up">
         <h2 className="section-title">
@@ -188,6 +241,7 @@ const HomePage: React.FC = () => {
           ))}
         </div>
       </div>
+<<<<<<< HEAD
       <div className="how-it-works-section" data-aos="fade-up">
         <h2 className="section-title">
           <span className="highlight">{translate('howItWorks')}</span>
@@ -212,6 +266,32 @@ const HomePage: React.FC = () => {
 
       
       
+=======
+
+      {!user && (
+        <div className="cta-section" data-aos="fade-up">
+          <div className="cta-background"></div>
+          <h2 className="cta-title">{translate('startNow')}</h2>
+          <p className="cta-description" data-aos="fade-up" data-aos-delay="200">
+            {translate('startNowDesc')}
+          </p>
+          <Link 
+            to="/register" 
+            className="btn btn-light btn-lg btn-with-icon"
+            data-aos="zoom-in"
+            data-aos-delay="400"
+          >
+            <i className="bi bi-arrow-right-circle"></i>
+            <span>{translate('registerFree')}</span>
+            <div className="btn-hover-effect"></div>
+          </Link>
+          <div className="floating-shapes">
+            <div className="shape shape-1"></div>
+            <div className="shape shape-2"></div>
+          </div>
+        </div>
+      )}
+>>>>>>> e0c8134 (third one commit)
       
       <div className="stats-section" data-aos="fade-up">
         <div className="stats-grid">

@@ -177,33 +177,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [checkAuth]); // checkAuth'ın referansı sabit olduğu için bu useEffect sadece bir kere çalışır (mount olduğunda)
 
   // Ürünleri yüklemek için useEffect
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setIsLoading(true);
-        const response = await api.get<ApiResponse<ProductsResponse>>('/products');
-        console.log('API yanıtı:', response.data);
-        
-        // Backend'den gelen veri yapısını kontrol edelim
-        if (response.data && response.data.success) {
-          // Backend'den gelen veri yapısı: { success: true, data: { products: [...], pagination: {...} } }
-          const productsData = response.data.data?.products || [];
-          console.log('Yüklenen ürünler:', productsData);
-          setProducts(productsData);
-        } else {
-          console.warn('Ürünler yüklenemedi:', response.data);
-          setProducts([]);
-        }
-      } catch (error) {
-        console.error('Ürünleri yükleme hatası:', error);
+  const fetchProducts = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get<ApiResponse<ProductsResponse>>('/products');
+      console.log('API yanıtı:', response.data);
+      
+      if (response.data && response.data.success) {
+        const productsData = response.data.data?.products || [];
+        console.log('Yüklenen ürünler:', productsData);
+        setProducts(productsData);
+      } else {
+        console.warn('Ürünler yüklenemedi:', response.data);
         setProducts([]);
-      } finally {
-        setIsLoading(false);
       }
-    };
+    } catch (error) {
+      console.error('Ürünleri yükleme hatası:', error);
+      setProducts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setIsLoading, setProducts]); // Bağımlılıkları ekledik
 
+  useEffect(() => {
     fetchProducts();
-  }, []); // Sadece component mount olduğunda çalışsın
+  }, [fetchProducts]); // Sadece fetchProducts referansı değiştiğinde çalışsın
 
   // Kullanıcı oturumunu kontrol etme (API bağlı, useCallback eklendi)
   const login = useCallback(async (email: string, password: string) => {
@@ -907,23 +905,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Reviews state'ini güncelleyen fonksiyon
   const fetchReviews = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/reviews', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      // 'fetch' yerine merkezi 'api' servisini kullan
+      const response = await api.get<ApiResponse<Review[]>>('/reviews');
       
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && Array.isArray(data.data)) {
-          setReviews(data.data);
-        }
+      if (response.data.success && Array.isArray(response.data.data)) {
+        setReviews(response.data.data);
       }
     } catch (error) {
       console.error('Yorumlar yüklenirken hata oluştu:', error);
     }
-  }, []);
+  }, []); // Bağımlılık dizisi boş kalabilir, çünkü dışarıdan bir şey kullanmıyor
 
   // Uygulama başladığında yorumları yükle
   useEffect(() => {
@@ -935,67 +926,33 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       console.log('Yorum ekleme isteği gönderiliyor:', reviewData);
       
-      // Health check endpoint'ini test edelim
-      try {
-        const healthResponse = await fetch('http://localhost:5001/api/health', {
-          method: 'GET'
-        });
-        
-        if (healthResponse.ok) {
-          const healthData = await healthResponse.json();
-          console.log('Health check başarılı:', healthData);
-          
-          // Şimdi normal reviews endpoint'ini deneyelim
-          const newReview = {
-            ...reviewData,
-            date: new Date().toISOString(),
-            isApproved: false,
-            userId: user?._id || '',
-            username: user?.username || 'Anonymous'
-          };
-          
-          const reviewResponse = await fetch('http://localhost:5001/api/reviews', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify(newReview)
-          });
-          
-          if (reviewResponse.ok) {
-            const responseData = await reviewResponse.json();
-            console.log('Yorum başarıyla eklendi:', responseData);
-            
-            if (responseData.success && responseData.data) {
-              setReviews(prev => [...prev, responseData.data]);
-              
-              // Yorumlar başarıyla eklendiğinde tüm yorumları yeniden yükle
-              await fetchReviews();
-            }
-            return responseData;
-          } else {
-            const errorData = await reviewResponse.json();
-            console.error('Yorum eklenirken hata:', errorData);
-            throw new Error(errorData.message || 'Yorum eklenirken bir hata oluştu');
-          }
-        } else {
-          console.error('Health check başarısız:', healthResponse.statusText);
-          throw new Error('Backend sunucusuna erişilemiyor');
-        }
-      } catch (error) {
-        console.error('Backend bağlantı hatası:', error);
-        throw error;
+      const newReview = {
+        ...reviewData,
+        userId: user?._id || '', // user'ı doğrudan kullan
+        username: user?.username || 'Anonymous' // user'ı doğrudan kullan
+      };
+
+      // 'fetch' yerine merkezi 'api' servisini kullan
+      const response = await api.post<ApiResponse<Review>>('/reviews', newReview);
+
+      if (response.data.success && response.data.data) {
+        console.log('Yorum başarıyla eklendi:', response.data.data);
+        // Yorumlar başarıyla eklendiğinde tüm yorumları yeniden yükle
+        await fetchReviews();
+      } else {
+        throw new Error(response.data.message || 'Yorum eklenirken bir hata oluştu');
       }
-    } catch (error) {
-      console.error('Yorum ekleme hatası:', error);
+
+    } catch (error: any) {
+      console.error('Yorum ekleme hatası:', error.response?.data || error.message);
       throw error;
     }
-  }, [user, fetchReviews]);
+  }, [user, fetchReviews]); // Eksik bağımlılıkları ekledik: user ve fetchReviews
 
   const deleteReview = useCallback(async (reviewId: string) => {
     try {
-      await api.delete(`/api/reviews/${reviewId}`);
+      // 'fetch' yerine merkezi 'api' servisini kullan ve doğru yolu belirt
+      await api.delete(`/reviews/${reviewId}`);
       setReviews(prev => prev.filter(review => review._id !== reviewId));
     } catch (error) {
       console.error('Error deleting review:', error);
@@ -1005,7 +962,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const approveReview = useCallback(async (reviewId: string) => {
     try {
-      await api.patch(`/api/reviews/${reviewId}/approve`);
+      // 'fetch' yerine merkezi 'api' servisini kullan ve doğru yolu belirt
+      await api.patch(`/reviews/${reviewId}/approve`);
       setReviews(prev =>
         prev.map(review =>
           review._id === reviewId

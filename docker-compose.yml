@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: stok_kontrol_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5001:5001"
+    networks:
+      - stok-network
+
+  frontend:
+    build: ./frontend
+    container_name: stok_kontrol_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - stok-network
+
+networks:
+  stok-network:
+    driver: bridge

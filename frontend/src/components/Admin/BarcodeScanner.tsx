@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Quagga, { QuaggaJSConfigObject, InputStreamType } from '@ericblade/quagga2'; // Quagga ve tipleri import edildi
 import { useAppContext } from '../../context/AppContext';
 import { ProductProps } from '../../types/product';
-import './BarcodeScanner.css';
+//import './BarcodeScanner.css';
 
 // Define a type for the points as expected by drawPath when using { x: 'x', y: 'y' }
 interface PointObject {

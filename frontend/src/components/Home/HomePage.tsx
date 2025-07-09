@@ -1,26 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-<<<<<<< HEAD
-import { useAppContext } from '../../context/AppContext';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-import './HomePage.css';
-
-const HomePage: React.FC = () => {
-
-  const { translate, language } = useAppContext();
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [activeFeature, setActiveFeature] = useState<number | null>(null);
-
-  // Özel çeviri fonksiyonu
-  const translateCustom = (turkish: string, english: string) => {
-    return language === 'tr' ? turkish : english;
-  };
-
-  // Initialize AOS animation library
-=======
 import { useAuth } from '../../context/AuthContext';
 import { useAppContext } from '../../context/AppContext';
 import AOS from 'aos';
@@ -38,7 +17,6 @@ const HomePage: React.FC = () => {
     return language === 'tr' ? turkish : english;
   };
 
->>>>>>> e0c8134 (third one commit)
   // Initialize AOS animation library
   useEffect(() => {
     AOS.init({
@@ -50,26 +28,10 @@ const HomePage: React.FC = () => {
     // Cleanup
     return () => {
       AOS.refresh();
-<<<<<<< HEAD
-    AOS.init({
-      duration: 1000,
-      once: false,
-      mirror: true,
-    });
-    
-    // Cleanup
-    return () => {
-      AOS.refresh();
-=======
->>>>>>> e0c8134 (third one commit)
     };
   }, []);
 
   // Set loaded state after component mounts
-<<<<<<< HEAD
-  // Set loaded state after component mounts
-=======
->>>>>>> e0c8134 (third one commit)
   useEffect(() => {
     setIsLoaded(true);
   }, []);
@@ -125,10 +87,6 @@ const HomePage: React.FC = () => {
         <p className="hero-subtitle" data-aos="fade-up" data-aos-delay="200">
           {translate('modernStockSolution')}
         </p>
-<<<<<<< HEAD
-        
-        (
-=======
         {!user ? (
           <div className="hero-buttons" data-aos="fade-up" data-aos-delay="400">
             <Link to="/login" className="btn btn-primary btn-lg btn-with-icon">
@@ -143,7 +101,6 @@ const HomePage: React.FC = () => {
             </Link>
           </div>
         ) : (
->>>>>>> e0c8134 (third one commit)
           <div className="hero-buttons" data-aos="fade-up" data-aos-delay="400">
             <Link to="/products" className="btn btn-primary btn-lg btn-with-icon">
               <i className="bi bi-grid-3x3-gap"></i>
@@ -176,49 +133,16 @@ const HomePage: React.FC = () => {
             >
               <div className="feature-icon">
                 <i className={feature.icon}></i>
-<<<<<<< HEAD
-      <div className="features-section">
-        <h2 className="section-title" data-aos="fade-up">
-          <span className="highlight">{translate('features')}</span>
-        </h2>
-        <div className="features-grid">
-          {features.map((feature, index) => (
-            <div 
-              key={index}
-              className={`feature-card ${activeFeature === index ? 'active' : ''}`}
-              data-aos="zoom-in"
-              data-aos-delay={100 * index}
-              onMouseEnter={() => setActiveFeature(index)}
-              onMouseLeave={() => setActiveFeature(null)}
-            >
-              <div className="feature-icon">
-                <i className={feature.icon}></i>
-=======
->>>>>>> e0c8134 (third one commit)
               </div>
               <h3 className="feature-title">{feature.title}</h3>
               <p className="feature-description">
                 {feature.description}
               </p>
               <div className="feature-hover-effect"></div>
-<<<<<<< HEAD
-              <h3 className="feature-title">{feature.title}</h3>
-              <p className="feature-description">
-                {feature.description}
-              </p>
-              <div className="feature-hover-effect"></div>
-            </div>
-          ))}
-          ))}
-        </div>
-      </div>
-      </div>
-=======
             </div>
           ))}
         </div>
       </div>
->>>>>>> e0c8134 (third one commit)
 
       <div className="how-it-works-section" data-aos="fade-up">
         <h2 className="section-title">
@@ -241,32 +165,6 @@ const HomePage: React.FC = () => {
           ))}
         </div>
       </div>
-<<<<<<< HEAD
-      <div className="how-it-works-section" data-aos="fade-up">
-        <h2 className="section-title">
-          <span className="highlight">{translate('howItWorks')}</span>
-        </h2>
-        <div className="steps-container">
-          {steps.map((step, index) => (
-            <div 
-              key={index} 
-              className="step-item"
-              data-aos="fade-right"
-              data-aos-delay={150 * index}
-            >
-              <div className="step-number">{step.number}</div>
-              <h3 className="step-title">{step.title}</h3>
-              <p className="step-description">
-                {step.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      
-      
-=======
 
       {!user && (
         <div className="cta-section" data-aos="fade-up">
@@ -291,7 +189,6 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       )}
->>>>>>> e0c8134 (third one commit)
       
       <div className="stats-section" data-aos="fade-up">
         <div className="stats-grid">

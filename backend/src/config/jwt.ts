@@ -5,7 +5,7 @@ import { Types } from 'mongoose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-interface TokenPayload {
+export interface TokenPayload {
   userId: Types.ObjectId;
   email: string;
   isAdmin: boolean;

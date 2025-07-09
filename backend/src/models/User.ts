@@ -2,13 +2,6 @@ import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
-<<<<<<< HEAD
-  
-  
-  hasStockControlAccess: boolean;
-  isActive: boolean;
- 
-=======
   username: string;
   email: string;
   password: string;
@@ -25,14 +18,10 @@ export interface IUser extends Document {
   resetPasswordExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
->>>>>>> e0c8134 (third one commit)
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const userSchema = new Schema<IUser>({
-<<<<<<< HEAD
-  
-=======
   username: {
     type: String,
     required: [true, 'Kullanıcı adı gereklidir'],
@@ -72,7 +61,6 @@ const userSchema = new Schema<IUser>({
     type: Boolean,
     default: false
   },
->>>>>>> e0c8134 (third one commit)
   hasStockControlAccess: {
     type: Boolean,
     default: false
@@ -81,17 +69,6 @@ const userSchema = new Schema<IUser>({
     type: Boolean,
     default: true
   },
-<<<<<<< HEAD
-  
-
-  timestamps: true
-});
-
-
-
-
-export default mongoose.model<IUser>( userSchema);
-=======
   lastLogin: {
     type: Date
   },
@@ -122,4 +99,3 @@ userSchema.methods.comparePassword = async function(candidatePassword: string): 
 };
 
 export default mongoose.model<IUser>('User', userSchema);
->>>>>>> e0c8134 (third one commit)

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import './AddProduct.css';
+//import './AddProduct.css';
 import BarcodeScanner from './BarcodeScanner';
 import { ProductProps } from '../../types/product';
 

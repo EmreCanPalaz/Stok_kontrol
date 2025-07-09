@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken, JWTPayload } from '../config/jwt';
+import { verifyToken, TokenPayload } from '../config/jwt';
 import User from '../models/User';
 
 export interface AuthRequest extends Request {
-  user?: JWTPayload;
+  user?: TokenPayload;
 }
 
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
@@ -51,7 +51,7 @@ export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction
 };
 
 export const requireStockAccess = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  if (!req.user?.isAdmin && !req.user?.hasStockControlAccess) {
+  if (!req.user?.isAdmin && !req.user?.isAdmin) {
     res.status(403).json({
       success: false,
       message: 'Bu işlem için stok kontrol yetkisi gereklidir.'

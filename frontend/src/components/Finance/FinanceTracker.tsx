@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import './FinanceTracker.css';
+//import './FinanceTracker.css';
 import { FinancialTransaction, ProductProps } from '../../types/product';
 import { format } from 'date-fns';
 

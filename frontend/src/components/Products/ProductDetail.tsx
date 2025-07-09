@@ -4,10 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import { ProductProps, Review } from '../../types/product';
-<<<<<<< HEAD
-=======
 import { useAuth } from '../../context/AuthContext';
->>>>>>> e0c8134 (third one commit)
 import { format } from 'date-fns';
 import './ProductDetail.css';
 
@@ -26,11 +23,7 @@ const ProductDetail: React.FC = () => {
     deleteReview,
     approveReview
   } = useAppContext();
-<<<<<<< HEAD
-  
-=======
   const { user } = useAuth();
->>>>>>> e0c8134 (third one commit)
   const navigate = useNavigate();
   
   const [product, setProduct] = useState<ProductProps | null>(null);
@@ -134,20 +127,12 @@ const ProductDetail: React.FC = () => {
     const newReview: Review = {
       _id: Date.now().toString(), // Geçici ID, backend tarafında değiştirilecek
       productId,
-<<<<<<< HEAD
-      
-      rating: newReviewRating,
-      comment: newReviewComment,
-      date: new Date().toISOString(),
-      
-=======
       userId: user._id,
       username: user.username || user.email.split('@')[0],
       rating: newReviewRating,
       comment: newReviewComment,
       date: new Date().toISOString(),
       isApproved: user.role === 'admin' // Admin ise otomatik onaylı
->>>>>>> e0c8134 (third one commit)
     };
 
     try {
@@ -347,9 +332,6 @@ const ProductDetail: React.FC = () => {
                 
                 {!review.isApproved && <span className="pending-badge">Onay Bekliyor</span>}
                 
-<<<<<<< HEAD
-                
-=======
                 {user && (user.role === 'admin' || user._id === review.userId) && (
                   <div className="review-actions">
                     {user.role === 'admin' && !review.isApproved && (
@@ -357,7 +339,6 @@ const ProductDetail: React.FC = () => {
                         <i className="bi bi-check-circle"></i> Onayla
                       </button>
                     )}
->>>>>>> e0c8134 (third one commit)
                     <button onClick={() => handleDeleteReview(review._id)} className="delete-btn">
                       <i className="bi bi-trash"></i> Sil
                     </button>

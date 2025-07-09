@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import './ActivityLog.css';
+//import './ActivityLog.css';
 import { ActivityLog } from '../../types/product';
 import { format } from 'date-fns';
 

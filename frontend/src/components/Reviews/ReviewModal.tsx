@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import './ReviewModal.css';
+//import './ReviewModal.css';
 import { Review, ProductProps } from '../../types/product';
 import { format } from 'date-fns';
 

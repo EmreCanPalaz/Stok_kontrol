@@ -6,10 +6,6 @@ const Footer: React.FC = () => {
   const { translate, translateCustom } = useAppContext();
   const [email, setEmail] = useState('');
   const currentYear = new Date().getFullYear();
-<<<<<<< HEAD
-  const currentYear = new Date().getFullYear();
-=======
->>>>>>> e0c8134 (third one commit)
 
   const handleSocialClick = (platform: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -187,11 +183,6 @@ const Footer: React.FC = () => {
       </div>
       
       <div className="footer-bottom">
-<<<<<<< HEAD
-      
-      <div className="footer-bottom">
-=======
->>>>>>> e0c8134 (third one commit)
         <div className="container">
           <div className="row align-items-center">
             <div className="col-md-6">
@@ -219,43 +210,10 @@ const Footer: React.FC = () => {
               </ul>
             </div>
           </div>
-<<<<<<< HEAD
-          <div className="row align-items-center">
-            <div className="col-md-6">
-              <p className="copyright-text mb-md-0">
-                &copy; {currentYear} EmKaHan Stok Kontrol. {translateCustom('Tüm hakları saklıdır.', 'All rights reserved.')}
-              </p>
-            </div>
-            <div className="col-md-6">
-              <ul className="footer-bottom-links">
-                <li>
-                  <a href="#" onClick={(e) => handleLinkClick(translateCustom('Gizlilik Politikası', 'Privacy Policy'), e)}>
-                    {translateCustom('Gizlilik Politikası', 'Privacy Policy')}
-                  </a>
-                </li>
-                <li>
-                  <a href="#" onClick={(e) => handleLinkClick(translateCustom('Kullanım Şartları', 'Terms of Use'), e)}>
-                    {translateCustom('Kullanım Şartları', 'Terms of Use')}
-                  </a>
-                </li>
-                <li>
-                  <a href="#" onClick={(e) => handleLinkClick(translateCustom('Çerez Politikası', 'Cookie Policy'), e)}>
-                    {translateCustom('Çerez Politikası', 'Cookie Policy')}
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-=======
->>>>>>> e0c8134 (third one commit)
         </div>
       </div>
     </footer>
   );
 };
 
-<<<<<<< HEAD
-export default Footer;
-=======
->>>>>>> e0c8134 (third one commit)
 export default Footer;

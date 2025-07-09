@@ -1,13 +1,4 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect, useCallback, useMemo } from 'react';
-<<<<<<< HEAD
-
-import api from '../services/api';
-
-
-// Tüm tipleri types/product.ts'den import edin
-import {
- 
-=======
 import { authService } from '../services/authService';
 import api from '../services/api';
 import { useAuth } from './AuthContext';
@@ -15,16 +6,11 @@ import { useAuth } from './AuthContext';
 // Tüm tipleri types/product.ts'den import edin
 import {
   UserData,
->>>>>>> e0c8134 (third one commit)
   ProductProps,
   CartItem,
   InventoryTransaction,
   FinancialTransaction,
-<<<<<<< HEAD
- 
-=======
   ActivityLog,
->>>>>>> e0c8134 (third one commit)
   Review,
   ApiResponse,
   ProductsResponse
@@ -37,15 +23,6 @@ interface AppContextType {
   addToCart: (product: ProductProps) => void;
   removeFromCart: (productId: string) => void;
   updateItemQuantity: (productId: string, newQuantity: number) => void;
-<<<<<<< HEAD
-  removeFromCart: (productId: string) => void;
-  updateItemQuantity: (productId: string, newQuantity: number) => void;
-  clearCart: () => void;
-  translate: (key: string) => string;
-  translateCustom: (turkishText: string, englishText: string) => string;
-  
-  
-=======
   clearCart: () => void;
   translate: (key: string) => string;
   translateCustom: (turkishText: string, englishText: string) => string;
@@ -58,7 +35,6 @@ interface AppContextType {
   resetPassword: (email: string) => Promise<void>;
   submitFeedback: (rating: number, comment: string) => Promise<void>;
   isLoading: boolean;
->>>>>>> e0c8134 (third one commit)
 
   // Favorites functionality
   favoriteItems: ProductProps[];
@@ -114,18 +90,9 @@ interface AppContextType {
   setLanguage: (lang: 'tr' | 'en') => void;
 
   setProducts: (products: ProductProps[]) => void;
-<<<<<<< HEAD
-
-  setProducts: (products: ProductProps[]) => void;
 }
 
 // AppContext'i oluşturun
-// AppContext'i oluşturun
-=======
-}
-
-// AppContext'i oluşturun
->>>>>>> e0c8134 (third one commit)
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // Context Provider bileşeni
@@ -151,55 +118,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Dil ayarı için state
   const savedLanguage = localStorage.getItem('language') as 'tr' | 'en' | null;
   const [language, setLanguage] = useState<'tr' | 'en'>(savedLanguage || 'tr');
+  const [activeAdminPanel, setActiveAdminPanel] = useState<string | null>(null);
 
   // İşlem Logu ekleme fonksiyonu (Diğer fonksiyonlar tarafından çağrılacak)
-<<<<<<< HEAD
-  
-    
-
-  // Ürünleri yüklemek için useEffect
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setIsLoading(true);
-        const response = await api.get<ApiResponse<ProductsResponse>>('/products');
-        console.log('API yanıtı:', response.data);
-        
-        // Backend'den gelen veri yapısını kontrol edelim
-        if (response.data && response.data.success) {
-          // Backend'den gelen veri yapısı: { success: true, data: { products: [...], pagination: {...} } }
-          const productsData = response.data.data?.products || [];
-          console.log('Yüklenen ürünler:', productsData);
-          setProducts(productsData);
-        } else {
-          console.warn('Ürünler yüklenemedi:', response.data);
-          setProducts([]);
-        }
-      } catch (error) {
-        console.error('Ürünleri yükleme hatası:', error);
-        setProducts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []); // Sadece component mount olduğunda çalışsın
-
-  // Kullanıcı oturumunu kontrol etme (API bağlı, useCallback eklendi)
- 
-
-  const getStockStatus = useCallback((productId: string): number => {
-    const product = products.find(p => p._id === productId);
-    return product ? product.stock : 0;
-  }, [products]);
-
-  const checkLowStockItems = useCallback((threshold: number = 10): ProductProps[] => {
-    return products.filter(product => product.stock < threshold);
-  }, [products]);
-
-  const updateStock = useCallback(async (productId: string, newStock: number) => {
-=======
   const addActivityLog = useCallback((logData: Omit<ActivityLog, '_id' | 'date' | 'performedBy'>) => {
     const newLog: ActivityLog = {
       ...logData,
@@ -348,44 +269,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const updateUser = useCallback(async (currentPassword: string, newUsername?: string, newPassword?: string): Promise<UserData> => {
     if (!user || !user._id) throw new Error('Kullanıcı girişi yapılmamış.');
->>>>>>> e0c8134 (third one commit)
     setIsLoading(true);
-    const oldProduct = products.find(p => p._id === productId);
-
     try {
-<<<<<<< HEAD
-      setProducts(prevProducts =>
-        prevProducts.map(product =>
-          product._id === productId
-            ? { ...product, stock: newStock }
-            : product
-        )
-      );
-
-      if (oldProduct) {
-        ({
-          action: 'stock_update_success',
-          description: `"${oldProduct.title}" ürününün stok miktarı güncellendi`,
-          details: {
-            productId: oldProduct._id,
-            oldStock: oldProduct.stock,
-            newStock,
-            productName: oldProduct.title
-          },
-        });
-      }
-    } catch (error: any) {
-      console.error('Stok güncelleme hatası:', error);
-      ({
-        action: 'stock_update_failed',
-        description: `"${oldProduct?.title || productId}" ürününün stok güncellemesi başarısız oldu`,
-        details: {
-          productId: productId,
-          newStock,
-          error: error.message
-        },
-      });
-=======
       const updateData: any = { currentPassword };
       if (newUsername) updateData.username = newUsername;
       if (newPassword) updateData.newPassword = newPassword;
@@ -408,86 +293,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         description: `Kullanıcı profili güncellenemedi`,
         details: { userId: user?._id, username: user?.username, newUsername, email: user?.email, error: error.message },
       });
->>>>>>> e0c8134 (third one commit)
       throw error;
     } finally {
       setIsLoading(false);
     }
-<<<<<<< HEAD
-  }, [products, setProducts, addActivityLog]);
-
-  const addInventoryTransaction = useCallback(async (transactionData: Omit<InventoryTransaction, '_id' | 'date' | 'createdBy' | 'productName'>) => {
-    setIsLoading(true);
-    try {
-      console.log('Envanter işlemi ekleniyor:', transactionData);
-      
-      // Hata kontrolü ekleyin
-      if (!transactionData.productId || !transactionData.type || transactionData.quantity === undefined) {
-        throw new Error('Geçersiz envanter işlemi verileri');
-      }
-      
-      // API isteğini try-catch bloğu içinde yapın
-      try {
-        // Backend 'in' ve 'out' yerine 'inbound' ve 'outbound' bekliyor
-        const mappedType = transactionData.type === 'in' ? 'inbound' : 'outbound';
-        
-        const response: ApiResponse<InventoryTransaction> = await api.post('/inventory/transactions', {
-          ...transactionData,
-          type: mappedType
-        });
-        
-        if (!response.data) {
-          throw new Error('Sunucu geçerli veri döndürmedi');
-        }
-        
-        const newTransaction = response.data;
-
-         // TypeScript'in any tipini kullanarak tip uyumsuzluğunu geçici olarak aşıyoruz
-         const backendType = (newTransaction as any).type;
-         const frontendType = backendType === 'inbound' ? 'in' : 'out';
-         const updatedTransaction = {
-           ...newTransaction,
-           type: frontendType as 'in' | 'out'
-         };
-
-        const product = products.find(p => p._id === transactionData.productId);
-        if (!product) {
-          ({
-            action: `inventory_${transactionData.type}_failed`,
-            description: `Depo işlemi başarısız oldu: Ürün bulunamadı (${transactionData.productId})`,
-            details: { ...transactionData },
-          });
-          throw new Error(`Ürün bulunamadı: ${transactionData.productId}`);
-        }
-
-        const calculatedNewStock = transactionData.type === 'in'
-          ? product.stock + transactionData.quantity
-          : product.stock - transactionData.quantity;
-        await updateStock(product._id, Math.max(0, calculatedNewStock));
-
-        setInventoryTransactions(prev => [...prev, updatedTransaction]);
-
-        ({
-          action: `inventory_${frontendType}_success`,
-          description: `"${newTransaction.productName}" için ${frontendType === 'in' ? 'giriş' : 'çıkış'} işlemi yapıldı`,
-          details: { ...updatedTransaction, productId: updatedTransaction.productId, productName: updatedTransaction.productName },
-        });
-      } catch (error: any) {
-        console.error('Depo işlemi hatası:', error);
-       ({
-          action: `inventory_${transactionData.type}_failed`,
-          description: `Depo işlemi başarısız oldu: ${error.message}`,
-          details: { ...transactionData, error: error.message },
-        });
-        throw error;
-      }
-    } catch (error: any) {
-      console.error('Envanter işlemi hatası:', error);
-      ({
-        action: 'inventory_add_failed',
-        description: `Envanter işlemi başarısız oldu: ${error.message}`,
-        details: { ...transactionData, error: error.message },
-=======
   }, [user, addActivityLog]);
 
   const deleteAccount = useCallback(async (password: string): Promise<void> => {
@@ -516,16 +325,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         action: 'delete_account_failed',
         description: `Hesap silinemedi`,
         details: { userId: user?._id, username: user?.username, email: user?.email, error: error.message },
->>>>>>> e0c8134 (third one commit)
       });
       throw error;
     } finally {
       setIsLoading(false);
     }
-<<<<<<< HEAD
-  }, [products, updateStock, setIsLoading, setInventoryTransactions, addActivityLog]);
-
-=======
   }, [user, authLogout, setCartItems, setFavoriteItems, setInventoryTransactions, setFinancialTransactions, setReviews, addActivityLog]);
 
   const resetPassword = useCallback(async (email: string): Promise<void> => {
@@ -701,7 +505,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [products, updateStock, setIsLoading, setInventoryTransactions, addActivityLog]);
 
->>>>>>> e0c8134 (third one commit)
   const getInventoryTransactionsByProduct = useCallback((productId: string): InventoryTransaction[] => {
     return inventoryTransactions.filter(t => t.productId === productId);
   }, [inventoryTransactions]);
@@ -745,9 +548,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   }, [financialTransactions]);
 
-<<<<<<< HEAD
-  
-=======
   const getActivityLogsByAction = useCallback((action: string): ActivityLog[] => {
     return activityLogs.filter(log => log.action === action);
   }, [activityLogs]);
@@ -776,7 +576,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       details: {},
     });
   }, [setActivityLogs, addActivityLog]);
->>>>>>> e0c8134 (third one commit)
 
   const getReviewsByProduct = useCallback((productId: string): Review[] => {
     return reviews.filter(review => review.productId === productId);
@@ -800,163 +599,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const addToFavorites = useCallback((product: ProductProps) => {
     if (!favoriteItems.some(item => item._id === product._id)) {
       setFavoriteItems(prev => [...prev, product]);
-<<<<<<< HEAD
-      
-    } else {
-      console.warn(`Ürün zaten favorilerde: ${product.title}`);
-    }
-  }, [favoriteItems, user, addActivityLog, setFavoriteItems]);
-
-  const removeFromFavorites = useCallback((productId: string) => {
-    const removedProduct = favoriteItems.find(item => item._id === productId);
-    setFavoriteItems(prev => prev.filter(item => item._id !== productId));
-    
-    } else if (!removedProduct) {
-      console.warn(`Favorilerden çıkarılacak ürün bulunamadı: ${productId}`);
-    }
-  }, [favoriteItems, user, addActivityLog, setFavoriteItems]);
-
-  const isFavorite = useCallback((productId: string): boolean => {
-    return favoriteItems.some(item => item._id === productId);
-  }, [favoriteItems]);
-
-  const addProduct = useCallback(async (productData: FormData): Promise<ProductProps> => {
-    setIsLoading(true);
-    try {
-      // FormData'yı doğrudan gönderelim, JSON'a dönüştürmeden
-      console.log('API\'ye gönderilen FormData:', {
-        title: productData.get('title'),
-        price: productData.get('price'),
-        description: productData.get('description'),
-        category: productData.get('category'),
-        sku: productData.get('sku'),
-        stock: productData.get('stock'),
-        image: productData.get('image'),
-        imageUrl: productData.get('imageUrl')
-      });
-      
-      // Content-Type header'ı otomatik olarak multipart/form-data olarak ayarlanacak
-      const response: ApiResponse<ProductProps> = await api.post('/products', productData);
-      const newProduct = response.data;
-
-      // Backend'den dönen veriyi kontrol et
-      console.log('Backend\'den dönen ürün:', newProduct);
-
-      // Frontend'de kullanmak için image alanını ekleyelim
-      const newProductWithImage = {
-        ...newProduct,
-        // Eğer backend'den gelen image varsa onu kullan, yoksa FormData'dan al
-        image: newProduct.image || productData.get('imageUrl') as string || '',
-        // Price değerinin sayı olduğundan emin olalım
-        price: typeof newProduct.price === 'number' ? newProduct.price : 
-               typeof newProduct.price === 'string' ? parseFloat(newProduct.price) : 0
-      };
-
-      console.log('Frontend\'de kullanılacak ürün:', newProductWithImage);
-
-      setProducts(prevProducts => [...prevProducts, newProductWithImage]);
-
-      addActivityLog({
-        action: 'product_added_success',
-        description: `Yeni ürün eklendi: "${newProduct.title}"`,
-        details: { productId: newProduct._id, productName: newProduct.title, createdBy: user?.username },
-      });
-
-      return newProductWithImage;
-    } catch (error: any) {
-      // Hata detaylarını daha ayrıntılı loglayalım
-      console.error('Ürün ekleme hatası:', error);
-      console.error('Hata yanıtı:', error.response?.data);
-      console.error('Hata durumu:', error.response?.status);
-      
-      addActivityLog({
-        action: 'product_add_failed',
-        description: `Ürün ekleme başarısız oldu: ${error.message}`,
-        details: { 
-          title: productData.get('title'), 
-          error: error.message, 
-          errorDetails: error.response?.data,
-          createdBy: user?.username 
-        },
-      });
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [setIsLoading, setProducts, addActivityLog, user]);
-
-  const updateProduct = useCallback(async (productId: string, productData: ProductProps): Promise<void> => {
-    setIsLoading(true);
-    try {
-      // API isteği gönder
-      const response: ApiResponse<ProductProps> = await api.put(`/products/${productId}`, productData);
-      const updatedProduct = response.data;
-
-      // Ürün listesini güncelle
-      setProducts(prevProducts =>
-        prevProducts.map(product =>
-          product._id === productId ? updatedProduct : product
-        )
-      );
-
-      // İşlem logu ekle
-     
-    } catch (error: any) {
-      console.error('Ürün güncelleme hatası:', error);
-      
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [setIsLoading, setProducts, addActivityLog, user]);
-
-  const deleteProduct = useCallback(async (productId: string): Promise<void> => {
-    setIsLoading(true);
-    const productToDelete = products.find(p => p._id === productId);
-    
-    try {
-      // API isteği gönder
-      await api.delete(`/products/${productId}`);
-      
-      // Ürün listesini güncelle
-      setProducts(prevProducts => prevProducts.filter(product => product._id !== productId));
-      
-      // İşlem logu ekle
-      if (productToDelete) {
-       ({
-          action: 'product_delete_success',
-          description: `Ürün silindi: "${productToDelete.title}"`,
-          details: { 
-            productId, 
-            productName: productToDelete.title, 
-            deletedBy: user?.username 
-          },
-        });
-      }
-    } catch (error: any) {
-      console.error('Ürün silme hatası:', error);
-     ({
-        action: 'product_delete_failed',
-        description: `Ürün silme başarısız oldu: ${error.message}`,
-        details: { 
-          productId, 
-          productName: productToDelete?.title || 'Bilinmeyen ürün', 
-          error: error.message, 
-          deletedBy: user?.username 
-        },
-      });
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [products, setIsLoading, setProducts, addActivityLog, user]);
-
-  const handleSetLanguage = useCallback((lang: 'tr' | 'en') => {
-    const oldLanguage = language;
-    setLanguage(lang);
-    localStorage.setItem('language', lang);
-
-=======
       if (user && user._id) {
         addActivityLog({
           action: 'add_to_favorites_success',
@@ -1139,7 +781,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setLanguage(lang);
     localStorage.setItem('language', lang);
 
->>>>>>> e0c8134 (third one commit)
     addActivityLog({
       action: 'language_change_success',
       description: `Dil değiştirildi: ${lang === 'tr' ? 'Türkçe' : 'İngilizce'}`,
@@ -1387,7 +1028,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     clearCart,
     translate,
     translateCustom,
-   
+    user,
+    login,
+    register,
+    logout,
+    updateUser,
+    deleteAccount,
+    resetPassword,
+    submitFeedback,
     isLoading,
     favoriteItems,
     addToFavorites,
@@ -1407,15 +1055,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     financialTransactions,
     addFinancialTransaction,
     getFinancialSummary,
-    totalIncome: getFinancialSummary().totalIncome,
-    totalExpense: getFinancialSummary().totalExpense,
-    balance: getFinancialSummary().balance,
     getFinancialTransactionsByCategory,
     getFinancialTransactionsByType,
     getFinancialTransactionsByDateRange,
-<<<<<<< HEAD
-    
-=======
     activeAdminPanel,
     setActiveAdminPanel,
     activityLogs,
@@ -1423,7 +1065,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     getActivityLogsByUser,
     getActivityLogsByDateRange,
     clearActivityLogs,
->>>>>>> e0c8134 (third one commit)
     reviews,
     addReview,
     deleteReview,
@@ -1443,9 +1084,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     clearCart,
     translate,
     translateCustom,
-<<<<<<< HEAD
-    
-=======
     user,
     login,
     register,
@@ -1454,7 +1092,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     deleteAccount,
     resetPassword,
     submitFeedback,
->>>>>>> e0c8134 (third one commit)
     isLoading,
     favoriteItems,
     addToFavorites,
@@ -1477,9 +1114,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     getFinancialTransactionsByCategory,
     getFinancialTransactionsByType,
     getFinancialTransactionsByDateRange,
-<<<<<<< HEAD
-   
-=======
     activeAdminPanel,
     setActiveAdminPanel,
     activityLogs,
@@ -1487,7 +1121,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     getActivityLogsByUser,
     getActivityLogsByDateRange,
     clearActivityLogs,
->>>>>>> e0c8134 (third one commit)
     reviews,
     addReview,
     deleteReview,
@@ -1538,19 +1171,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [language]);
 
   return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
-<<<<<<< HEAD
-  return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
-=======
->>>>>>> e0c8134 (third one commit)
 };
 
 export const useAppContext = (): AppContextType => {
   const context = useContext(AppContext);
   if (!context) {
-<<<<<<< HEAD
-  if (!context) {
-=======
->>>>>>> e0c8134 (third one commit)
     throw new Error('useAppContext must be used within an AppProvider');
   }
   return context;

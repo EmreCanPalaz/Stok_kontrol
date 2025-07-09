@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import './AdminReviews.css';
+//import './AdminReviews.css';
 import { Review, ProductProps } from '../../types/product';
 import { format } from 'date-fns';
 

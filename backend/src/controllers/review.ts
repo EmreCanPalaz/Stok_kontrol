@@ -1,11 +1,7 @@
 import { Request, Response } from 'express';
 import Review, { ReviewDocument } from '../models/Review';
 import mongoose from 'mongoose';
-<<<<<<< HEAD
-
-=======
 import { AuthRequest } from '../middleware/auth';
->>>>>>> e0c8134 (third one commit)
 
 // Tüm yorumları getir
 export const getAllReviews = async (req: Request, res: Response): Promise<void> => {
@@ -49,11 +45,7 @@ export const getReviewsByProduct = async (req: Request, res: Response): Promise<
 };
 
 // Belirli bir kullanıcıya ait yorumları getir
-<<<<<<< HEAD
-export const getReviewsByUser = async ( res: Response): Promise<void> => {
-=======
 export const getReviewsByUser = async (req: AuthRequest, res: Response): Promise<void> => {
->>>>>>> e0c8134 (third one commit)
   try {
     const { userId } = req.params;
     
@@ -78,11 +70,7 @@ export const getReviewsByUser = async (req: AuthRequest, res: Response): Promise
 };
 
 // Yeni yorum ekle
-<<<<<<< HEAD
-export const addReview = async ( res: Response): Promise<void> => {
-=======
 export const addReview = async (req: AuthRequest, res: Response): Promise<void> => {
->>>>>>> e0c8134 (third one commit)
   try {
     const { productId, rating, comment } = req.body;
     const userId = req.user?.userId;
@@ -107,11 +95,7 @@ export const addReview = async (req: AuthRequest, res: Response): Promise<void> 
     }
     
     // Admin kullanıcılar için otomatik onay
-<<<<<<< HEAD
-    
-=======
     const isApproved = req.user?.isAdmin === true;
->>>>>>> e0c8134 (third one commit)
     
     const newReview = new Review({
       productId,
@@ -160,18 +144,13 @@ export const deleteReview = async (req: AuthRequest, res: Response): Promise<voi
     }
     
     // Sadece admin veya yorumu yazan kullanıcı silebilir
-<<<<<<< HEAD
-    
-    
-=======
-    if (!req.user?.isAdmin && review.userId.toString() !== req.user?.userId) {
+    if (!req.user?.isAdmin && review.userId.toString() !== req.user?.userId?.toString()) {
       res.status(403).json({
         success: false,
         error: 'Bu işlem için yetkiniz yok'
       });
       return;
     }
->>>>>>> e0c8134 (third one commit)
     
     await Review.findByIdAndDelete(reviewId);
     
@@ -188,13 +167,6 @@ export const deleteReview = async (req: AuthRequest, res: Response): Promise<voi
 };
 
 // Yorumu onayla (sadece admin)
-<<<<<<< HEAD
-export const approveReview = async ( res: Response): Promise<void> => {
-  try {
-    const { reviewId } = req.params;
-    
-    
-=======
 export const approveReview = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { reviewId } = req.params;
@@ -206,7 +178,6 @@ export const approveReview = async (req: AuthRequest, res: Response): Promise<vo
       });
       return;
     }
->>>>>>> e0c8134 (third one commit)
     
     if (!mongoose.Types.ObjectId.isValid(reviewId)) {
       res.status(400).json({

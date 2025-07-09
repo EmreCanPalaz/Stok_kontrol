@@ -7,11 +7,7 @@ import {
   deleteProduct,
   getLowStockProducts
 } from '../controllers/productController';
-<<<<<<< HEAD
-
-=======
 import { authenticate, requireAdmin } from '../middleware/auth';
->>>>>>> e0c8134 (third one commit)
 import { validateRequest, productSchema } from '../middleware/validation';
 import { upload } from '../config/multer';
 
@@ -25,8 +21,6 @@ router.get('/:id', getProduct);
 
 
 
-<<<<<<< HEAD
-=======
 // Protected routes (Admin only)
 router.post('/', 
   authenticate, 
@@ -39,9 +33,9 @@ router.put('/:id',
   authenticate, 
   requireAdmin, 
   upload.single('image'),
+  validateRequest(productSchema),
   updateProduct
 );
 router.delete('/:id', authenticate, requireAdmin, deleteProduct);
->>>>>>> e0c8134 (third one commit)
 
 export default router;

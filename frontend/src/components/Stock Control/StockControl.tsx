@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import './StockControl.css';
+//import './StockControl.css';
 import { ProductProps } from '../../types/product';
 
 const StockControl: React.FC = () => {

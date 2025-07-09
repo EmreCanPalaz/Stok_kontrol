@@ -2,17 +2,10 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import Product from '../models/Product';
 import InventoryTransaction from '../models/Inventory';
-<<<<<<< HEAD
-
-
-// Stok güncelleme
-export const updateStock = async ( res: Response): Promise<void> => {
-=======
 import { AuthRequest } from '../middleware/auth';
 
 // Stok güncelleme
 export const updateStock = async (req: AuthRequest, res: Response): Promise<void> => {
->>>>>>> e0c8134 (third one commit)
   const session = await mongoose.startSession();
   session.startTransaction();
 

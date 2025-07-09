@@ -1,10 +1,6 @@
 import { Request, Response } from 'express';
 import Product from '../models/Product';
-<<<<<<< HEAD
-
-=======
 import { AuthRequest } from '../middleware/auth';
->>>>>>> e0c8134 (third one commit)
 
 // Ürün listesi getirme
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
@@ -97,11 +93,7 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
 };
 
 // Yeni ürün oluşturma
-<<<<<<< HEAD
-export const createProduct = async ( res: Response): Promise<void> => {
-=======
 export const createProduct = async (req: AuthRequest, res: Response): Promise<void> => {
->>>>>>> e0c8134 (third one commit)
   try {
     // Debug logları
     console.log('Request body:', req.body);
@@ -109,14 +101,10 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<vo
     console.log('Request files:', req.files);
     console.log('Content-Type:', req.headers['content-type']);
     
-<<<<<<< HEAD
-    
-=======
     const productData = {
       ...req.body,
       createdBy: req.user?.userId
     };
->>>>>>> e0c8134 (third one commit)
 
     console.log('Product data after spread:', productData);
     console.log('imageUrl in productData:', productData.imageUrl);
@@ -173,11 +161,7 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<vo
 };
 
 // Ürün güncelleme
-<<<<<<< HEAD
-export const updateProduct = async ( res: Response): Promise<void> => {
-=======
 export const updateProduct = async (req: AuthRequest, res: Response): Promise<void> => {
->>>>>>> e0c8134 (third one commit)
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -212,11 +196,7 @@ export const updateProduct = async (req: AuthRequest, res: Response): Promise<vo
 };
 
 // Ürün silme (soft delete)
-<<<<<<< HEAD
-export const deleteProduct = async ( res: Response): Promise<void> => {
-=======
 export const deleteProduct = async (req: AuthRequest, res: Response): Promise<void> => {
->>>>>>> e0c8134 (third one commit)
   try {
     const { id } = req.params;
 

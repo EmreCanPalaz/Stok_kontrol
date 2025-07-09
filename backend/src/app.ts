@@ -7,21 +7,12 @@ import connectDB from './config/database';
 import { errorHandler } from './middleware/errorHandler';
 
 // Import routes
-<<<<<<< HEAD
-
-import productRoutes from './routes/products';
-import stockRoutes from './routes/stock';
-
-import inventoryRoutes from './routes/inventory';
-
-=======
 import authRoutes from './routes/auth';
 import productRoutes from './routes/products';
 import stockRoutes from './routes/stock';
 import userRoutes from './routes/users';
 import inventoryRoutes from './routes/inventory';
 import feedbackRoutes from './routes/feedback';
->>>>>>> e0c8134 (third one commit)
 import reviewsRoutes from './routes/reviews';
 
 const app = express();
@@ -31,16 +22,29 @@ connectDB();
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
-}));
+
+// Daha güvenilir CORS yapılandırması
+const allowedOrigins = [process.env.FRONTEND_URL || 'http://localhost:3000'];
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // `origin` undefined ise (örneğin Postman gibi araçlardan gelen istekler) veya beyaz listede ise izin ver
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Bu adresten gelen isteklere CORS politikası tarafından izin verilmiyor.'));
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
-windowMs: 5 * 60 * 1000, // 5 minutes
-max: 100, // limit each IP to 1000 requests per windowMs
-message: 'Too many requests from this IP, please try again later.'
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 100, // limit each IP to 1000 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api/', limiter);
 
@@ -52,21 +56,12 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API routes
-<<<<<<< HEAD
-
-app.use('/api/products', productRoutes);
-app.use('/api/stock', stockRoutes); 
-
-app.use('/api/inventory', inventoryRoutes);
-
-=======
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/stock', stockRoutes); 
 app.use('/api/users', userRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/feedback', feedbackRoutes);
->>>>>>> e0c8134 (third one commit)
 app.use('/api/reviews', reviewsRoutes);
 
 // Doğrudan tanımlanan reviews rotası

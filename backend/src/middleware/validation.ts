@@ -26,15 +26,11 @@ export const userRegistrationSchema = Joi.object({
   password: Joi.string().min(6).required()
 });
 
-<<<<<<< HEAD
-
-=======
 export const userLoginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
   rememberMe: Joi.boolean().optional()
 });
->>>>>>> e0c8134 (third one commit)
 
 export const productSchema = Joi.object({
   title: Joi.string().max(200).required(),
@@ -49,15 +45,6 @@ export const productSchema = Joi.object({
   imageUrl: Joi.string().optional()
 });
 
-<<<<<<< HEAD
-
-
-
-
-
-
-
-=======
 // Şifre sıfırlama için şema
 export const resetPasswordSchema = Joi.object({
   email: Joi.string().email().required()
@@ -107,4 +94,3 @@ export const validateUserUpdate = (req: Request, res: Response, next: NextFuncti
   }
   next();
 };
->>>>>>> e0c8134 (third one commit)

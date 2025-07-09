@@ -1,13 +1,5 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
-<<<<<<< HEAD
-
-
-// Get user profile
-export const getUserProfile = async ( res: Response): Promise<void> => {
-  try {
-    const user = await User.findById(req.user?.userId).select('-password');
-=======
 import Product from '../models/Product'; // Product modelini import ediyoruz
 import { AuthRequest } from '../middleware/auth';
 
@@ -16,7 +8,6 @@ export const getUserProfile = async (req: AuthRequest, res: Response): Promise<v
   try {
     // Favori ürün bilgilerini de getirmek için .populate() kullanıyoruz
     const user = await User.findById(req.user?.userId).select('-password').populate('favorites');
->>>>>>> e0c8134 (third one commit)
     if (!user) {
       res.status(404).json({ message: 'User not found' });
       return;
@@ -27,11 +18,7 @@ export const getUserProfile = async (req: AuthRequest, res: Response): Promise<v
   }
 };
 
-<<<<<<< HEAD
-export const updateUserProfile = async ( res: Response): Promise<void> => {
-=======
 export const updateUserProfile = async (req: AuthRequest, res: Response): Promise<void> => {
->>>>>>> e0c8134 (third one commit)
   try {
     const { firstName, lastName, email, phone, address } = req.body;
 
@@ -65,16 +52,6 @@ export const updateUserProfile = async (req: AuthRequest, res: Response): Promis
   }
 };
 
-<<<<<<< HEAD
-
-
-
-
-
-    
-
-
-=======
 // Get all users (Admin only)
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -187,4 +164,3 @@ export const removeFavorite = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: 'Server error', error });
   }
 };
->>>>>>> e0c8134 (third one commit)

@@ -1,31 +1,9 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-<<<<<<< HEAD
-import { Routes, Route, Navigate } from 'react-router-dom';
-=======
->>>>>>> e0c8134 (third one commit)
 import { AppProvider } from './context/AppContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import HomePage from './components/Home/HomePage';
 import Navbar from './components/Navbar/Navbar';
-<<<<<<< HEAD
-
-
-import ProductList from './components/Products/ProductList';
-
-import FavoritesPage from './components/Products/FavoritesPage';
-import ProductDetail from './components/Products/ProductDetail';
-
-import StockControl from './components/Stock Control/StockControl';
-import InventoryTracker from './components/Inventory/InventoryTracker';
-import FinanceTracker from './components/Finance/FinanceTracker';
-
-import Footer from './components/Footer/Footer';
-
-// Korumalı Route bileşeni
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  
-=======
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import ForgotPassword from './components/Auth/ForgotPassword';
@@ -89,7 +67,6 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
->>>>>>> e0c8134 (third one commit)
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
@@ -102,15 +79,11 @@ const AppRoutes: React.FC = () => {
           <Profile />
         </ProtectedRoute>
       } />
-<<<<<<< HEAD
-      
-=======
       <Route path="/feedback" element={
         <ProtectedRoute>
           <Feedback />
         </ProtectedRoute>
       } />
->>>>>>> e0c8134 (third one commit)
       <Route path="/products" element={
         <ProtectedRoute>
           <ProductList />
@@ -121,22 +94,15 @@ const AppRoutes: React.FC = () => {
           <FavoritesPage />
         </ProtectedRoute>
       } />
-<<<<<<< HEAD
-=======
       <Route path="/cart" element={
         <ProtectedRoute>
           <CartPage />
         </ProtectedRoute>
       } />
->>>>>>> e0c8134 (third one commit)
       <Route path="/products/:productId" element={
         <ProductDetail />
       } />
       
-<<<<<<< HEAD
-      
-      
-=======
       {/* Admin Panel Routes */}
       <Route path="/admin" element={
         <AdminRoute>
@@ -183,7 +149,6 @@ const AppRoutes: React.FC = () => {
           <EditProduct />
         </AdminRoute>
       } />
->>>>>>> e0c8134 (third one commit)
       
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
@@ -203,20 +168,6 @@ const App: React.FC = () => {
         </div>
       </AppProvider>
     </ErrorBoundary>
-<<<<<<< HEAD
-    <ErrorBoundary>
-      <AppProvider>
-        <div className="app-container">
-          <Navbar />
-          <main className="main-content">
-            <AppRoutes />
-          </main>
-          <Footer />
-        </div>
-      </AppProvider>
-    </ErrorBoundary>
-=======
->>>>>>> e0c8134 (third one commit)
   );
 };
 
